@@ -1,18 +1,3 @@
-# MemoFlux
-
-<<<<<<< HEAD
-
-# Main Scene
-- Information Manager
-    - Work & Study
-    - Life & Decsion Hint
-
-- Schedule Manager
-    - Work & Mission 
-    - Personal(Life) & Personal Care
-
--  Master Manager
-=======
 MemoFlux 是一个智能日程管理工具，可以根据自然语言描述自动生成结构化的日程安排。
 
 ## 功能特性
@@ -83,4 +68,3 @@ schedule = await schedule_core.gen_schedule_from_image(image)
 # 运行测试
 python -m pytest src/schedules/tests/test_core.py -v
 ```
->>>>>>> 8f8864788ed108ea0bfbe13f103a65e559307290
