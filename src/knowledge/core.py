@@ -1,13 +1,13 @@
 """
-日程管理模块的核心实现
+知识管理模块的核心实现
 
-该模块负责根据用户输入的文本或图像生成结构化的日程安排。
+该模块负责根据用户输入的文本或图像生成结构化的知识内容。
 
 公开接口:
-- ScheduleCore: 实现 ScheduleInterface 的核心类，提供 gen_schedule_from_text 和 gen_schedule_from_image 方法
+- KnowledgeCore: 实现 KnowledgeInterface 的核心类，提供 get_knowledge_from_text 和 get_knowledge_from_image 方法
 
 内部方法:
-- _convert_baml_schedule_to_schema: 将 BAML 的 Schedule 模型转换为本地 Schema 模型
+- _convert_baml_to_schema: 将 BAML 的 Knowledge 模型转换为本地 Schema 模型
 """
 
 import uuid
@@ -28,13 +28,14 @@ class KnowledgeCore(KnowledgeInterface):
 
     async def get_knowledge_from_text(self, text: str,tag:List[str]) -> KnowledgeRes:
         """
-        根据输入文本生成日程安排
+        根据输入文本生成知识内容
         
         Args:
             text: 用户输入的文本内容
+            tag: 标签列表
             
         Returns:
-            Schedule: 结构化的日程对象
+            KnowledgeRes: 结构化的知识对象
         """
         # 调用 LLM 生成日程
         knowledge = await call_llm(text,tag)
@@ -46,13 +47,14 @@ class KnowledgeCore(KnowledgeInterface):
 
     async def get_knowledge_from_image(self, image: Image, tag: List[str]) -> KnowledgeRes:
         """
-        根据输入图像生成日程安排
+        根据输入图像生成知识内容
         
         Args:
             image: 用户输入的图像
+            tag: 标签列表
             
         Returns:
-            Schedule: 结构化的日程对象
+            KnowledgeRes: 结构化的知识对象
         """
         # 调用 LLM 生成日程
         knowledge = await call_llm(image,tag)
@@ -64,13 +66,14 @@ class KnowledgeCore(KnowledgeInterface):
 
     async def get_knowledge_from_content(self, content: Union[str, Image],tag:List[str]) -> KnowledgeRes:
         """
-        根据输入内容（文本或图像）生成日程安排
+        根据输入内容（文本或图像）生成知识内容
         
         Args:
             content: 用户输入的内容（文本或图像）
+            tag: 标签列表
             
         Returns:
-            Schedule: 结构化的日程对象
+            KnowledgeRes: 结构化的知识对象
         """
         if isinstance(content, str):
             return await self.get_knowledge_from_text(content,tag)
@@ -79,14 +82,14 @@ class KnowledgeCore(KnowledgeInterface):
 
     def _convert_baml_to_schema(self, meta: Knowledge, category: str) -> KnowledgeRes:
         """
-        将 BAML 的 Schedule 模型转换为本地 Schema 模型
+        将 BAML 的 Knowledge 模型转换为本地 Schema 模型
         
         Args:
-            baml_schedule: BAML 生成的日程对象
-            original_text: 原始输入文本
+            meta: BAML 生成的知识对象
+            category: 知识分类
             
         Returns:
-            Schedule: 转换后的本地日程对象
+            KnowledgeRes: 转换后的本地知识对象
         """
         # 转换任务列表
 
