@@ -9,7 +9,7 @@ load_dotenv()
 class Settings(BaseSettings):
     app_name: str = "MemoFlux"
     app_port: int = 8000
-    log_path: str = "/log/"
+    log_path: str = "./logs/"
     postgresql_url: str = "postgresql://user:password@localhost/dbname"
     siliconflow_apikey: str = "your_llm_api_key"
     google_apikey: str = "your_google_api_key"
@@ -19,4 +19,4 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
 
 # 创建一个全局的 settings 实例
-settings = Settings() 
+settings = Settings()

@@ -85,13 +85,13 @@ class BamlSyncClient:
     def parse_stream(self):
       return self.__llm_stream_parser
     
-    def ExtractResume(self, resume: str,
+    def KnowledgeStruct(self, text: str,tag: typing.List[str],
         baml_options: BamlCallOptions = {},
-    ) -> types.Resume:
-        result = self.__options.merge_options(baml_options).call_function_sync(function_name="ExtractResume", args={
-            "resume": resume,
+    ) -> types.Knowledge:
+        result = self.__options.merge_options(baml_options).call_function_sync(function_name="KnowledgeStruct", args={
+            "text": text,"tag": tag,
         })
-        return typing.cast(types.Resume, result.cast_to(types, types, stream_types, False, __runtime__))
+        return typing.cast(types.Knowledge, result.cast_to(types, types, stream_types, False, __runtime__))
     
 
 
@@ -101,16 +101,16 @@ class BamlStreamClient:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
-    def ExtractResume(self, resume: str,
+    def KnowledgeStruct(self, text: str,tag: typing.List[str],
         baml_options: BamlCallOptions = {},
-    ) -> baml_py.BamlSyncStream[stream_types.Resume, types.Resume]:
-        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(function_name="ExtractResume", args={
-            "resume": resume,
+    ) -> baml_py.BamlSyncStream[stream_types.Knowledge, types.Knowledge]:
+        ctx, result = self.__options.merge_options(baml_options).create_sync_stream(function_name="KnowledgeStruct", args={
+            "text": text,"tag": tag,
         })
-        return baml_py.BamlSyncStream[stream_types.Resume, types.Resume](
+        return baml_py.BamlSyncStream[stream_types.Knowledge, types.Knowledge](
           result,
-          lambda x: typing.cast(stream_types.Resume, x.cast_to(types, types, stream_types, True, __runtime__)),
-          lambda x: typing.cast(types.Resume, x.cast_to(types, types, stream_types, False, __runtime__)),
+          lambda x: typing.cast(stream_types.Knowledge, x.cast_to(types, types, stream_types, True, __runtime__)),
+          lambda x: typing.cast(types.Knowledge, x.cast_to(types, types, stream_types, False, __runtime__)),
           ctx,
         )
     
@@ -121,11 +121,11 @@ class BamlHttpRequestClient:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
-    def ExtractResume(self, resume: str,
+    def KnowledgeStruct(self, text: str,tag: typing.List[str],
         baml_options: BamlCallOptions = {},
     ) -> baml_py.baml_py.HTTPRequest:
-        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="ExtractResume", args={
-            "resume": resume,
+        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="KnowledgeStruct", args={
+            "text": text,"tag": tag,
         }, mode="request")
         return result
     
@@ -136,11 +136,11 @@ class BamlHttpStreamRequestClient:
     def __init__(self, options: DoNotUseDirectlyCallManager):
         self.__options = options
 
-    def ExtractResume(self, resume: str,
+    def KnowledgeStruct(self, text: str,tag: typing.List[str],
         baml_options: BamlCallOptions = {},
     ) -> baml_py.baml_py.HTTPRequest:
-        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="ExtractResume", args={
-            "resume": resume,
+        result = self.__options.merge_options(baml_options).create_http_request_sync(function_name="KnowledgeStruct", args={
+            "text": text,"tag": tag,
         }, mode="stream")
         return result
     

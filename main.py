@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from src.log.logger import logger
 
 
 app = FastAPI(
@@ -8,5 +9,4 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
-
 )

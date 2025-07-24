@@ -18,51 +18,105 @@ from .globals import DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIM
 class TypeBuilder(type_builder.TypeBuilder):
     def __init__(self):
         super().__init__(classes=set(
-          ["Resume",]
+          ["Knowledge","KnowledgeItem","Node",]
         ), enums=set(
-          []
+          ["RelationShip",]
         ), runtime=DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME)
 
     # #########################################################################
-    # Generated enums 0
-    # #########################################################################
-
-
-    # #########################################################################
-    # Generated classes 1
+    # Generated enums 1
     # #########################################################################
 
     @property
-    def Resume(self) -> "ResumeViewer":
-        return ResumeViewer(self)
+    def RelationShip(self) -> "RelationShipViewer":
+        return RelationShipViewer(self)
+
+
+    # #########################################################################
+    # Generated classes 3
+    # #########################################################################
+
+    @property
+    def Knowledge(self) -> "KnowledgeViewer":
+        return KnowledgeViewer(self)
+
+    @property
+    def KnowledgeItem(self) -> "KnowledgeItemViewer":
+        return KnowledgeItemViewer(self)
+
+    @property
+    def Node(self) -> "NodeViewer":
+        return NodeViewer(self)
 
 
 
 # #########################################################################
-# Generated enums 0
+# Generated enums 1
 # #########################################################################
 
-
-# #########################################################################
-# Generated classes 1
-# #########################################################################
-
-class ResumeAst:
+class RelationShipAst:
     def __init__(self, tb: type_builder.TypeBuilder):
         _tb = tb._tb # type: ignore (we know how to use this private attribute)
-        self._bldr = _tb.class_("Resume")
-        self._properties: typing.Set[str] = set([  "name",  "email",  "experience",  "skills",  ])
-        self._props = ResumeProperties(self._bldr, self._properties)
+        self._bldr = _tb.enum("RelationShip")
+        self._values: typing.Set[str] = set([  "PARENT",  "CHILD",  ])
+        self._vals = RelationShipValues(self._bldr, self._values)
 
     def type(self) -> baml_py.FieldType:
         return self._bldr.field()
 
     @property
-    def props(self) -> "ResumeProperties":
+    def values(self) -> "RelationShipValues":
+        return self._vals
+
+
+class RelationShipViewer(RelationShipAst):
+    def __init__(self, tb: type_builder.TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_values(self) -> typing.List[typing.Tuple[str, type_builder.EnumValueViewer]]:
+        return [(name, type_builder.EnumValueViewer(self._bldr.value(name))) for name in self._values]
+    
+
+class RelationShipValues:
+    def __init__(self, enum_bldr: baml_py.EnumBuilder, values: typing.Set[str]):
+        self.__bldr = enum_bldr
+        self.__values = values # type: ignore (we know how to use this private attribute) # noqa: F821
+
+    
+    
+    @property
+    def PARENT(self) -> type_builder.EnumValueViewer:
+        return type_builder.EnumValueViewer(self.__bldr.value("PARENT"))
+    
+    @property
+    def CHILD(self) -> type_builder.EnumValueViewer:
+        return type_builder.EnumValueViewer(self.__bldr.value("CHILD"))
+    
+    
+
+
+
+# #########################################################################
+# Generated classes 3
+# #########################################################################
+
+class KnowledgeAst:
+    def __init__(self, tb: type_builder.TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("Knowledge")
+        self._properties: typing.Set[str] = set([  "knowledge_items",  "related_items",  "tags",  ])
+        self._props = KnowledgeProperties(self._bldr, self._properties)
+
+    def type(self) -> baml_py.FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "KnowledgeProperties":
         return self._props
 
 
-class ResumeViewer(ResumeAst):
+class KnowledgeViewer(KnowledgeAst):
     def __init__(self, tb: type_builder.TypeBuilder):
         super().__init__(tb)
 
@@ -72,7 +126,7 @@ class ResumeViewer(ResumeAst):
     
 
 
-class ResumeProperties:
+class KnowledgeProperties:
     def __init__(self, bldr: baml_py.ClassBuilder, properties: typing.Set[str]):
         self.__bldr = bldr
         self.__properties = properties # type: ignore (we know how to use this private attribute) # noqa: F821
@@ -80,20 +134,110 @@ class ResumeProperties:
     
     
     @property
-    def name(self) -> type_builder.ClassPropertyViewer:
-        return type_builder.ClassPropertyViewer(self.__bldr.property("name"))
+    def knowledge_items(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("knowledge_items"))
     
     @property
-    def email(self) -> type_builder.ClassPropertyViewer:
-        return type_builder.ClassPropertyViewer(self.__bldr.property("email"))
+    def related_items(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("related_items"))
     
     @property
-    def experience(self) -> type_builder.ClassPropertyViewer:
-        return type_builder.ClassPropertyViewer(self.__bldr.property("experience"))
+    def tags(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("tags"))
+    
+    
+
+
+class KnowledgeItemAst:
+    def __init__(self, tb: type_builder.TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("KnowledgeItem")
+        self._properties: typing.Set[str] = set([  "id",  "header",  "content",  "node",  ])
+        self._props = KnowledgeItemProperties(self._bldr, self._properties)
+
+    def type(self) -> baml_py.FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "KnowledgeItemProperties":
+        return self._props
+
+
+class KnowledgeItemViewer(KnowledgeItemAst):
+    def __init__(self, tb: type_builder.TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, type_builder.ClassPropertyViewer]]:
+        return [(name, type_builder.ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+    
+
+
+class KnowledgeItemProperties:
+    def __init__(self, bldr: baml_py.ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties # type: ignore (we know how to use this private attribute) # noqa: F821
+
+    
     
     @property
-    def skills(self) -> type_builder.ClassPropertyViewer:
-        return type_builder.ClassPropertyViewer(self.__bldr.property("skills"))
+    def id(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("id"))
+    
+    @property
+    def header(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("header"))
+    
+    @property
+    def content(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("content"))
+    
+    @property
+    def node(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("node"))
+    
+    
+
+
+class NodeAst:
+    def __init__(self, tb: type_builder.TypeBuilder):
+        _tb = tb._tb # type: ignore (we know how to use this private attribute)
+        self._bldr = _tb.class_("Node")
+        self._properties: typing.Set[str] = set([  "targert_id",  "relationship",  ])
+        self._props = NodeProperties(self._bldr, self._properties)
+
+    def type(self) -> baml_py.FieldType:
+        return self._bldr.field()
+
+    @property
+    def props(self) -> "NodeProperties":
+        return self._props
+
+
+class NodeViewer(NodeAst):
+    def __init__(self, tb: type_builder.TypeBuilder):
+        super().__init__(tb)
+
+    
+    def list_properties(self) -> typing.List[typing.Tuple[str, type_builder.ClassPropertyViewer]]:
+        return [(name, type_builder.ClassPropertyViewer(self._bldr.property(name))) for name in self._properties]
+    
+
+
+class NodeProperties:
+    def __init__(self, bldr: baml_py.ClassBuilder, properties: typing.Set[str]):
+        self.__bldr = bldr
+        self.__properties = properties # type: ignore (we know how to use this private attribute) # noqa: F821
+
+    
+    
+    @property
+    def targert_id(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("targert_id"))
+    
+    @property
+    def relationship(self) -> type_builder.ClassPropertyViewer:
+        return type_builder.ClassPropertyViewer(self.__bldr.property("relationship"))
     
     
 
