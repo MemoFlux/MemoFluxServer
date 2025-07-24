@@ -16,8 +16,16 @@ from . import stream_types
 
 type_map = {
 
-    "types.Resume": types.Resume,
-    "stream_types.Resume": stream_types.Resume,
+    "types.Knowledge": types.Knowledge,
+    "stream_types.Knowledge": stream_types.Knowledge,
 
+    "types.KnowledgeItem": types.KnowledgeItem,
+    "stream_types.KnowledgeItem": stream_types.KnowledgeItem,
+
+    "types.Node": types.Node,
+    "stream_types.Node": stream_types.Node,
+
+
+    "types.RelationShip": types.RelationShip,
 
 }

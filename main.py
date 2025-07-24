@@ -1,6 +1,5 @@
 from fastapi import FastAPI
-from log.logger import logger
-from router.log_test import router as log_test_router
+from src.log.logger import logger
 
 
 app = FastAPI(
@@ -11,7 +10,3 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
 )
-
-
-# 包含路由
-app.include_router(log_test_router, prefix="/api/v1")

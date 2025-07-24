@@ -1,0 +1,6 @@
+.venv
+*.log
+log*
+__pycache__
+temp*
+baml_client

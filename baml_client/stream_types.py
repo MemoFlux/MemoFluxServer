@@ -23,14 +23,23 @@ class StreamState(BaseModel, typing.Generic[StreamStateValueT]):
     value: StreamStateValueT
     state: typing_extensions.Literal["Pending", "Incomplete", "Complete"]
 # #########################################################################
-# Generated classes (1)
+# Generated classes (3)
 # #########################################################################
 
-class Resume(BaseModel):
-    name: typing.Optional[str] = None
-    email: typing.Optional[str] = None
-    experience: typing.List[str]
-    skills: typing.List[str]
+class Knowledge(BaseModel):
+    knowledge_items: typing.List["KnowledgeItem"]
+    related_items: typing.List[str]
+    tags: typing.List[str]
+
+class KnowledgeItem(BaseModel):
+    id: typing.Optional[int] = None
+    header: typing.Optional[str] = None
+    content: typing.Optional[str] = None
+    node: typing.Optional["Node"] = None
+
+class Node(BaseModel):
+    targert_id: typing.Optional[int] = None
+    relationship: typing.Optional[types.RelationShip] = None
 
 # #########################################################################
 # Generated type aliases (0)
