@@ -9,3 +9,5 @@
 - Schedule Manager
     - Work & Mission 
     - Personal(Life) & Personal Care
+
+-  Master Manager

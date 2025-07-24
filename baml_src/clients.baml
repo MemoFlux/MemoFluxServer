@@ -44,6 +44,18 @@ client<llm> QWenVL {
   }
 }
 
+
+client<llm> Gemini {
+  provider openai-generic
+  options {
+    model "gemini-2.5-pro"
+    api_key env.GOOGLE_APIKEY
+    base_url "https://ki-llmapi.kispace.cc/v1"
+  }
+}
+
+
+
 // https://docs.boundaryml.com/docs/snippets/clients/round-robin
 client<llm> CustomFast {
   provider round-robin
