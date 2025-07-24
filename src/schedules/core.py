@@ -102,7 +102,7 @@ class ScheduleCore(ScheduleInterface):
         tasks = []
         for i, baml_task in enumerate(baml_schedule.tasks):
             task = Task(
-                task_id=i,
+                id=i,
                 start_time=baml_task.start_time,
                 end_time=baml_task.end_time,
                 people=baml_task.people,

@@ -5,3 +5,4 @@ class Task(BamlTask):
 
 class Schedule(BamlSchedule):
     id: str
+    text: str
