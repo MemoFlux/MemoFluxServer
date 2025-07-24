@@ -22,7 +22,7 @@ enum PostType{
     "#)
 }
 
-class InfromationStruct{
+class Information{
     title string @description(#"
         信息的标题
     "#)
@@ -41,7 +41,7 @@ class InfromationStruct{
 
 }
 
-function InformationStruct(input:string | image,tag: string[]) -> InfromationStruct {
+function InformationStruct(input:string | image,tag: string[]) -> Information {
     client Gemini
     prompt #"
         你是一个信息结构化专家。这是用户希望结构化的内容：

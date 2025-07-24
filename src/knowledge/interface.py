@@ -1,15 +1,14 @@
 from abc import abstractmethod
-from baml_client.types import Knowledge
-from baml_client.types import Image
+from src.baml_client.types import Knowledge
+from baml_py import Image
 
 
-class KnowledgeBase:
+class KnowledgeInterface:
     """
     Schema for knowledge data.
     """
     @abstractmethod
     async def get_knowledge_from_text(self, text: str) -> Knowledge:
-        
         pass
     
     @abstractmethod
