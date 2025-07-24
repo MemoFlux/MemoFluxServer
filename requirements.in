@@ -1,3 +1,7 @@
 fastapi[all]
 pip-tools
 baml-py
+sqlalchemy
+pytest
+pytest-asyncio
+loguru
