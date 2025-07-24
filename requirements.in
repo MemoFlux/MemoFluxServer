@@ -5,3 +5,4 @@ sqlalchemy
 pytest
 pytest-asyncio
 loguru
+ruff
