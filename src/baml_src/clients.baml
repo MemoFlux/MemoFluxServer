@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 client<llm> QWenVL {
   provider openai-generic
   options {
@@ -7,11 +8,14 @@ client<llm> QWenVL {
   }
 }
 
+=======
+>>>>>>> 8f8864788ed108ea0bfbe13f103a65e559307290
 client<llm> Gemini {
   provider openai
   options {
     model "gemini-2.5-flash"
     base_url "https://ki-llmapi.kispace.cc/v1"
+<<<<<<< HEAD
     api_key sk-iRIzMYxmJKJ0jI6BauyK1ZkQb2hcRq9HDEWFcBo4tuP0mjGW
   }
 }
@@ -35,3 +39,8 @@ retry_policy Exponential {
     max_delay_ms 10000
   }
 }
+=======
+    api_key env.OPENAI_API_KEY
+  }
+}
+>>>>>>> 8f8864788ed108ea0bfbe13f103a65e559307290
