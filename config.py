@@ -11,7 +11,8 @@ class Settings(BaseSettings):
     app_port: int = 8000
     log_path: str = "/log/"
     postgresql_url: str = "postgresql://user:password@localhost/dbname"
-    llm_api_key: str = "your_llm_api_key"
+    siliconflow_apikey: str = "your_llm_api_key"
+    google_apikey: str = "your_google_api_key"
 
     class Config:
         env_file = ".env"  # 指定环境变量文件路径

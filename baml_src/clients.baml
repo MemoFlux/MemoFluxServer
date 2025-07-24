@@ -25,13 +25,22 @@ client<llm> CustomSonnet {
   }
 }
 
-
 client<llm> CustomHaiku {
   provider anthropic
   retry_policy Constant
   options {
     model "claude-3-haiku-20240307"
     api_key env.ANTHROPIC_API_KEY
+  }
+}
+
+
+client<llm> QWenVL {
+  provider openai
+  options {
+    model "Qwen/Qwen2.5-VL-7B-Instruct"
+    api_key env.SILICONFLOW_API_KEY
+    base_url "https://api.siliconflow.cn/v1"
   }
 }
 
