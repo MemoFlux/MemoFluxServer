@@ -35,6 +35,7 @@ client<llm> CustomHaiku {
   }
 }
 
+
 // https://docs.boundaryml.com/docs/snippets/clients/round-robin
 client<llm> CustomFast {
   provider round-robin
