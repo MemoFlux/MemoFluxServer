@@ -25,7 +25,6 @@ client<llm> CustomSonnet {
   }
 }
 
-
 client<llm> CustomHaiku {
   provider anthropic
   retry_policy Constant
@@ -35,6 +34,15 @@ client<llm> CustomHaiku {
   }
 }
 
+
+client<llm> QWenVL {
+  provider openai
+  options {
+    model "Qwen/Qwen2.5-VL-7B-Instruct"
+    api_key env.SILICONFLOW_API_KEY
+    base_url "https://api.siliconflow.cn/v1"
+  }
+}
 
 // https://docs.boundaryml.com/docs/snippets/clients/round-robin
 client<llm> CustomFast {
