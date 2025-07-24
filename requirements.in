@@ -1,4 +1,12 @@
 fastapi[all]
 pip-tools
 baml-py
+<<<<<<< HEAD
 loguru
+=======
+sqlalchemy
+pytest
+pytest-asyncio
+loguru
+ruff
+>>>>>>> 8f8864788ed108ea0bfbe13f103a65e559307290
