@@ -1,5 +1,5 @@
 import asyncio
-
+import json
 from fastapi import APIRouter
 from fastapi import Depends
 from pydantic import BaseModel, Field
@@ -11,8 +11,11 @@ from src.schedules.core import schedule_core
 from src.knowledge.core import knowledge_core
 from src.information.core import information_core
 from baml_py import Image
+from src.log.logger import logger
 
 from src.auth.router import get_current_user
+from src.utils import vector_db
+from src.utils.text_splitter import greedy_text_splitter
 
 router = APIRouter(
     prefix="/aigen",
@@ -43,15 +46,32 @@ async  def create_ai_req(req: AIReq,current_user: str = Depends(get_current_user
     """
     # 这里可以调用AI模型处理逻辑
     # 假设返回的结果是knowledge, information, schedule
+    rag_client = await vector_db.VectorDB.get_instance()
+    logger.debug("rag_client created")
     if (req.isimage == 1):
         image = Image.from_base64("image/png",req.content)
+        result = await rag_client.search(req.content)
+        logger.debug("start rag")
+        for i in result:
+            req.tags.append(i.payload.get("text"))
+        logger.debug("req.tags: %s", req.tags)
+        logger.debug("start llm")
         knowledge = knowledge_core.get_knowledge_from_content(image,req.tags)
         information = information_core.get_information_from_content(image,req.tags)
         schedule = schedule_core.gen_schedule_from_content(image)
     else:
-        knowledge = knowledge_core.get_knowledge_from_content(req.content,req.tags)
-        information = information_core.get_information_from_content(req.content,req.tags)
-        schedule = schedule_core.gen_schedule_from_content(req.content)
+        spilitted_str = greedy_text_splitter(req.content,max_length=30)
+        rag_dict = {}
+        logger.debug("start rag")
+        for i in spilitted_str:
+            result = await rag_client.search(i)
+            rag_dict[i] = result[0].payload.get("text")
+        logger.debug(f"rag_dict: {rag_dict}")
+        rag_str = json.dumps(rag_dict, ensure_ascii=False)
+        logger.debug("start llm")
+        knowledge = knowledge_core.get_knowledge_from_content(rag_str,req.tags)
+        information = information_core.get_information_from_content(rag_str,req.tags)
+        schedule = schedule_core.gen_schedule_from_content(rag_str.content)
 
     knowledge_result, information_result, schedule_result = await asyncio.gather(knowledge, information, schedule)
 

@@ -14,10 +14,18 @@ class Settings(BaseSettings):
     siliconflow_apikey: str = "your_llm_api_key"
     google_apikey: str = "your_google_api_key"
     gemini_apikey: str = "your_gemini_api_key"
+    openai_base_url: str
+    openai_api_key: str
+    openai_model: str
+    gemini_api_key: str
+    jina_api_key: str
+    qdrant_url: str
+    qdrant_api_key: str
 
     class Config:
         env_file = ".env"  # 指定环境变量文件路径
         env_file_encoding = "utf-8"
+        ignore_extra = True
 
 
 # 创建一个全局的 settings 实例

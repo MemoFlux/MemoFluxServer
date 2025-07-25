@@ -1,6 +1,6 @@
 import os
 from loguru import logger
-from config import settings
+from src.config import settings
 
 # 确保日志目录存在
 log_directory = settings.log_path.strip() if settings.log_path else "./logs/"
