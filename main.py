@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from src.log.logger import logger
 
 
 app = FastAPI(
