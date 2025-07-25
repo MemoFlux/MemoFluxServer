@@ -5,8 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import tempfile
 import os
-from db import Base
-from auth.router import router
+from src.db import Base
+from src.auth.router import router
 
 
 @pytest.fixture
@@ -24,7 +24,7 @@ def client():
     client = TestClient(app)
 
     # 替换依赖项
-    from db import get_db
+    from src.db import get_db
 
     def override_get_db():
         db = SessionLocal()
@@ -46,7 +46,7 @@ def client():
 @pytest.fixture(autouse=True)
 def clear_tokens():
     """自动清理令牌存储"""
-    from auth.token_manager import tokens
+    from src.auth.token_manager import tokens
 
     tokens.clear()
     yield

@@ -3,8 +3,9 @@ import tempfile
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models.user import Base, User
-from auth.service import (
+from src.db import Base
+from src.models.user import User
+from src.auth.service import (
     hash_password,
     create_user,
     get_user,
@@ -36,7 +37,7 @@ def db_session():
 @pytest.fixture(autouse=True)
 def clear_tokens():
     """自动清理令牌存储"""
-    from auth.token_manager import tokens
+    from src.auth.token_manager import tokens
 
     tokens.clear()
     yield
@@ -117,7 +118,7 @@ def test_create_access_token():
     token = create_access_token(username)
 
     # 验证令牌已存储
-    from auth.token_manager import tokens
+    from src.auth.token_manager import tokens
 
     assert token in tokens
     assert tokens[token]["username"] == username

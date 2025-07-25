@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime, timedelta
-from auth.token_manager import (
+from src.auth.token_manager import (
     generate_token,
     store_token,
     verify_token,
@@ -11,7 +11,7 @@ from auth.token_manager import (
 @pytest.fixture(autouse=True)
 def clear_tokens():
     """自动清理令牌存储"""
-    from auth.token_manager import tokens
+    from src.auth.token_manager import tokens
 
     tokens.clear()
     yield
@@ -47,7 +47,7 @@ def test_verify_nonexistent_token():
 
 def test_expired_token():
     """测试过期令牌"""
-    from auth.token_manager import tokens
+    from src.auth.token_manager import tokens
 
     token = generate_token()
     username = "testuser"
@@ -69,7 +69,7 @@ def test_expired_token():
 @pytest.mark.asyncio
 async def test_cleanup_expired_tokens():
     """测试清理过期令牌"""
-    from auth.token_manager import tokens
+    from src.auth.token_manager import tokens
 
     # 添加一个有效的令牌
     valid_token = generate_token()
