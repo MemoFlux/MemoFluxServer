@@ -25,7 +25,7 @@ class KnowledgeItem{
     content string @description(#"
         知识项的具体内容
     "#)
-    node Node @description(#"
+    node Node | null @description(#"
         知识项对应的节点信息
     "#)
 }
@@ -88,7 +88,7 @@ test KnowledgeStructureWithRelationships {
     functions [KnowledgeStruct]
     args {
         input #"
-            吴邪抽烟喝酒。吴邪因为喝酒身体出现脂肪肝等问题
+            员buff 在身无法选中，法考新素材看到一个六月重庆的警情通报，全员buff在身每未成年
         "#
         tag ["健康", "生活习惯"]
     }

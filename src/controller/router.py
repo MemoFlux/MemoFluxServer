@@ -10,6 +10,7 @@ from src.information.schemas import InformationRes
 from src.schedules.core import schedule_core
 from src.knowledge.core import knowledge_core
 from src.information.core import information_core
+from baml_py import Image
 
 from src.auth.router import get_current_user
 
@@ -21,17 +22,10 @@ router = APIRouter(
 
 class AIReq(BaseModel):
     tags: List[str] = Field(default=[])
-    content: Optional[str] = None
-    image: Optional[str] = None
-    
-    @model_validator(mode='after')
-    def content_and_image_mutually_exclusive(self):
-        # Either content or image must be provided, but not both
-        if self.content is None and self.image is None:
-            raise ValueError('Either content or image must be provided')
-        if self.content is not None and self.image is not None:
-            raise ValueError('content and image cannot be provided at the same time')
-        return self
+    content: str 
+    isimage: int
+
+
 
 class AIRes(BaseModel):
     knowledge: KnowledgeRes
@@ -39,7 +33,7 @@ class AIRes(BaseModel):
     schedule: Schedule
 
 
-@router.post("/",responses=AIRes)
+@router.post("/",response_model=AIRes)
 async  def create_ai_req(req: AIReq,current_user: str = Depends(get_current_user)) -> AIRes:
     """
     创建AI请求
@@ -49,9 +43,15 @@ async  def create_ai_req(req: AIReq,current_user: str = Depends(get_current_user
     """
     # 这里可以调用AI模型处理逻辑
     # 假设返回的结果是knowledge, information, schedule
-    knowledge = knowledge_core.get_knowledge_from_content(req.content,req.tags)
-    information = information_core.get_information_from_content(req.content,req.tags)
-    schedule = schedule_core.gen_schedule_from_content(req.content)
+    if (req.isimage == 1):
+        image = Image.from_base64("image/png",req.content)
+        knowledge = knowledge_core.get_knowledge_from_content(image,req.tags)
+        information = information_core.get_information_from_content(image,req.tags)
+        schedule = schedule_core.gen_schedule_from_content(image)
+    else:
+        knowledge = knowledge_core.get_knowledge_from_content(req.content,req.tags)
+        information = information_core.get_information_from_content(req.content,req.tags)
+        schedule = schedule_core.gen_schedule_from_content(req.content)
 
     knowledge_result, information_result, schedule_result = await asyncio.gather(knowledge, information, schedule)
 
