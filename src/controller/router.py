@@ -53,7 +53,8 @@ async  def create_ai_req(req: AIReq,current_user: str = Depends(get_current_user
         result = await rag_client.search(req.content)
         logger.debug("start rag")
         for i in result:
-            req.tags.append(i.payload.get("text"))
+            assert i.payload is not None
+            req.tags.append(i.payload.get("text")) # type: ignore
         logger.debug("req.tags: %s", req.tags)
         logger.debug("start llm")
         knowledge = knowledge_core.get_knowledge_from_content(image,req.tags)
@@ -61,11 +62,22 @@ async  def create_ai_req(req: AIReq,current_user: str = Depends(get_current_user
         schedule = schedule_core.gen_schedule_from_content(image)
     else:
         spilitted_str = greedy_text_splitter(req.content,max_length=30)
-        rag_dict = {}
         logger.debug("start rag")
-        for i in spilitted_str:
-            result = await rag_client.search(i)
-            rag_dict[i] = result[0].payload.get("text")
+        
+        sem = asyncio.Semaphore(100)
+        
+        async def concurrent_search(text: str):
+            async with sem:
+                return await rag_client.search(text)
+
+        tasks = [concurrent_search(s) for s in spilitted_str]
+        results = await asyncio.gather(*tasks)
+        
+        rag_dict = {}
+        for original_str, result_list in zip(spilitted_str, results):
+            assert result_list and result_list[0].payload is not None
+            rag_dict[original_str] = result_list[0].payload.get("text")
+            
         logger.debug(f"rag_dict: {rag_dict}")
         rag_str = json.dumps(rag_dict, ensure_ascii=False)
         logger.debug("start llm")
