@@ -98,7 +98,7 @@ class VectorDB:
         if not self.initialized:
             raise RuntimeError("VectorDB is not initialized. Call `get_instance` to initialize.")
 
-        query_embedding_response = await get_embeddings(query_content)
+        query_embedding_response = await get_embeddings([query_content])
         if not query_embedding_response.data:
             return []
 
