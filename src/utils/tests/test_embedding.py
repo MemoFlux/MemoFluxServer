@@ -4,10 +4,11 @@
 分为快速测试（使用 mock）和慢速测试（使用真实 API）两类。
 """
 
+from typing import List
 import pytest
 from unittest.mock import patch
 from src.utils.embedding import get_embeddings
-from src.utils.schemas import JinaEmbeddingResponse, JinaEmbeddingData, JinaUsage
+from src.utils.schemas import JinaEmbeddingInput, JinaEmbeddingResponse, JinaEmbeddingData, JinaEmbeddingUsage, JinaTextInput
 
 
 # 快速测试（使用 mock）
@@ -18,7 +19,7 @@ class TestGetEmbeddingsFast:
     async def test_get_embeddings_success(self):
         """测试成功获取嵌入向量的情况。"""
         # 准备测试数据
-        content = ["This is a test content."]
+        content: List[JinaEmbeddingInput] = [JinaTextInput(text="This is a test content.")]
         mock_response_data = {
             "model": "jina-embeddings-v4",
             "object": "list",
@@ -41,7 +42,7 @@ class TestGetEmbeddingsFast:
             assert isinstance(result, JinaEmbeddingResponse)
             assert result.model == "jina-embeddings-v4"
             assert result.object == "list"
-            assert isinstance(result.usage, JinaUsage)
+            assert isinstance(result.usage, JinaEmbeddingUsage)
             assert result.usage.total_tokens == 10
             assert len(result.data) == 1
             assert isinstance(result.data[0], JinaEmbeddingData)
@@ -77,14 +78,14 @@ class TestGetEmbeddingsSlow:
     async def test_get_embeddings_real_api(self):
         """使用真实 API 测试获取嵌入向量。"""
         # 准备测试数据
-        content = ["This is a test content for real API call.", "This is a test content for real API call.", "This is a test content for real API call."]
+        content: List[JinaEmbeddingInput] = [JinaTextInput(text="This is a test content for real API call."), JinaTextInput(text="This is a test content for real API call."), JinaTextInput(text="This is a test content for real API call.")]
 
         result = await get_embeddings(content)
         # 验证结果
         assert isinstance(result, JinaEmbeddingResponse)
         assert result.model.startswith("jina-embeddings")
         assert result.object == "list"
-        assert isinstance(result.usage, JinaUsage)
+        assert isinstance(result.usage, JinaEmbeddingUsage)
         assert result.usage.total_tokens > 0
         assert len(result.data) > 0
         assert isinstance(result.data[0], JinaEmbeddingData)
