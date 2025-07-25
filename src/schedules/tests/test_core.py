@@ -29,7 +29,8 @@ async def test_gen_schedule():
     
     mock_baml_schedule = BamlSchedule(
         title="下午工作安排",
-        tasks=[mock_baml_task]
+        tasks=[mock_baml_task],
+        category="工作"
     )
     
     # 创建 ScheduleCore 实例
@@ -52,7 +53,8 @@ async def test_gen_schedule_empty():
     # 创建空的日程安排
     mock_baml_schedule = BamlSchedule(
         title="",
-        tasks=[]
+        tasks=[],
+        category=""
     )
     
     # 创建 ScheduleCore 实例
@@ -85,7 +87,8 @@ async def test_gen_schedule_from_image():
     
     mock_baml_schedule = BamlSchedule(
         title="明日早晨安排",
-        tasks=[mock_baml_task]
+        tasks=[mock_baml_task],
+        category="生活"
     )
     
     # 创建 ScheduleCore 实例

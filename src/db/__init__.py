@@ -4,7 +4,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 # 数据库配置
 DB_PATH = pathlib.Path.cwd() / "database.db"
-SQLALCHEMY_DATABASE_URL = f"sqlite+aiosqlite:///{DB_PATH}"
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}

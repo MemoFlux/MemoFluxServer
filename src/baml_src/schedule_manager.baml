@@ -32,6 +32,9 @@ class Schedule {
     title string @description(#"
         标题，需要具体且简洁，不能以“今日待办”、“今日计划”等模糊的标题
     "#)
+    category string @description(#"
+        分类
+    "#)
     tasks Task[] @description(#"
         事项列表
     "#)
