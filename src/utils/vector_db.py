@@ -48,6 +48,11 @@ class VectorDB:
                     cls._instance = instance
         return cls._instance
 
+    @classmethod
+    def _cleanup_instance(cls):
+        """清理单例实例，主要用于测试或脚本。"""
+        cls._instance = None
+
     async def _initialize(self) -> None:
         """将预定义的关键词嵌入并存储到向量数据库中。"""
         has_collection = await self.client.collection_exists(collection_name=self.collection_name)
@@ -106,3 +111,15 @@ class VectorDB:
         )
 
         return [VectorSearchResult.from_scored_point(hit) for hit in hits]
+
+    async def delete_collection(self):
+        """删除向量数据库中的集合。"""
+        result = await self.client.delete_collection(collection_name=self.collection_name)
+        if result:
+            print(f"集合 '{self.collection_name}' 已被成功删除。")
+            # 重置实例状态
+            self.initialized = False
+            VectorDB._cleanup_instance()
+        else:
+            print(f"删除集合 '{self.collection_name}' 失败。")
+        return result
