@@ -71,7 +71,7 @@ async  def create_ai_req(req: AIReq,current_user: str = Depends(get_current_user
         logger.debug("start llm")
         knowledge = knowledge_core.get_knowledge_from_content(rag_str,req.tags)
         information = information_core.get_information_from_content(rag_str,req.tags)
-        schedule = schedule_core.gen_schedule_from_content(rag_str.content)
+        schedule = schedule_core.gen_schedule_from_content(rag_str)
 
     knowledge_result, information_result, schedule_result = await asyncio.gather(knowledge, information, schedule)
 
