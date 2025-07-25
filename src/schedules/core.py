@@ -120,7 +120,8 @@ class ScheduleCore(ScheduleInterface):
             id=str(uuid.uuid4()),
             title=baml_schedule.title,
             text=original_text,
-            tasks=tasks
+            tasks=tasks,
+            category=baml_schedule.category
         )
         
         return schedule
