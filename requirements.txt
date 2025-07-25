@@ -4,6 +4,8 @@
 #
 #    pip-compile requirements.in
 #
+aiosqlite==0.21.0
+    # via -r requirements.in
 annotated-types==0.7.0
     # via pydantic
 anyio==4.9.0
@@ -44,8 +46,6 @@ fastapi-cli[standard]==0.0.8
     # via fastapi
 fastapi-cloud-cli==0.1.4
     # via fastapi-cli
-greenlet==3.2.3
-    # via sqlalchemy
 h11==0.16.0
     # via
     #   httpcore
@@ -156,6 +156,7 @@ typer==0.16.0
     #   fastapi-cloud-cli
 typing-extensions==4.14.1
     # via
+    #   aiosqlite
     #   anyio
     #   exceptiongroup
     #   fastapi

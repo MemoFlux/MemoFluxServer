@@ -72,3 +72,35 @@ function KnowledgeStruct(input:string | image,tag:string[]) -> Knowledge {
     "#
 }
 
+// Test case 1: Basic knowledge structure with text input
+test BasicKnowledgeStructure {
+    functions [KnowledgeStruct]
+    args {
+        input #"
+            人工智能是计算机科学的一个分支，它企图了解智能的实质，并生产出一种新的能以人类智能相似的方式做出反应的智能机器。
+        "#
+        tag ["科技", "计算机科学"]
+    }
+}
+
+// Test case 2: Knowledge structure with relationship between items
+test KnowledgeStructureWithRelationships {
+    functions [KnowledgeStruct]
+    args {
+        input #"
+            吴邪抽烟喝酒。吴邪因为喝酒身体出现脂肪肝等问题
+        "#
+        tag ["健康", "生活习惯"]
+    }
+}
+
+// Test case 3: Knowledge structure with new tags
+test KnowledgeStructureWithNewTags {
+    functions [KnowledgeStruct]
+    args {
+        input #"
+            Python是一种广泛使用的解释型、高级编程、通用型编程语言。
+        "#
+        tag ["编程语言"]
+    }
+}
