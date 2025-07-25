@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     postgresql_url: str = "postgresql://user:password@localhost/dbname"
     siliconflow_apikey: str = "your_llm_api_key"
     google_apikey: str = "your_google_api_key"
+    gemini_apikey: str = "your_gemini_api_key"
 
     class Config:
         env_file = ".env"  # 指定环境变量文件路径

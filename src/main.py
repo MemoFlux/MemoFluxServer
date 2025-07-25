@@ -4,7 +4,7 @@ from src.db import Base, engine
 from src.auth.token_manager import start_token_cleanup_task
 from src.auth.router import router as auth_router
 from fastapi.concurrency import asynccontextmanager
-
+from src.controller.router import router as controller_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -25,3 +25,4 @@ app = FastAPI(
 
 # 包含鉴权路由
 app.include_router(auth_router, prefix="/auth")
+app.include_router(controller_router)
