@@ -20,6 +20,15 @@ async def _make_embedding_request(content: List[JinaEmbeddingInput], headers: Di
             headers=headers,
             json=json_payload
         ) as response:
+            # 检查响应状态码
+            if response.status != 200:
+                error_text = await response.text()
+                raise aiohttp.ClientResponseError(
+                    request_info=response.request_info,
+                    history=response.history,
+                    status=response.status,
+                    message=f"Jina API error: {error_text}"
+                )
             result = await response.text()
             return json.loads(result)
 
@@ -34,5 +43,13 @@ async def get_embeddings(content: List[JinaEmbeddingInput]) -> JinaEmbeddingResp
     if not content:
         raise ValueError("Content is empty")
     
-    response_data = await _make_embedding_request(content, headers)
-    return JinaEmbeddingResponse.model_validate(response_data)
+    try:
+        response_data = await _make_embedding_request(content, headers)
+        # 检查响应数据是否包含错误信息
+        if "detail" in response_data:
+            raise ValueError(f"Jina API returned an error: {response_data['detail']}")
+        return JinaEmbeddingResponse.model_validate(response_data)
+    except aiohttp.ClientResponseError as e:
+        raise ValueError(f"Failed to get embeddings from Jina API: {e.message}") from e
+    except Exception as e:
+        raise ValueError(f"Failed to parse Jina API response: {str(e)}") from e

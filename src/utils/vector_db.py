@@ -65,22 +65,26 @@ class VectorDB:
         # 检查集合是否已经有数据，避免重复初始化
         collection_info = await self.client.get_collection(collection_name=self.collection_name)
         if collection_info.points_count is None or collection_info.points_count == 0:
-            embeddings_response = await get_embeddings([JinaTextInput(text=key) for key in KEYS])
-            
-            points = [
-                PointStruct(
-                    id=str(uuid.uuid4()),
-                    vector=embedding_data.embedding,
-                    payload={"text": key}
+            try:
+                embeddings_response = await get_embeddings([JinaTextInput(text=key) for key in KEYS])
+                
+                points = [
+                    PointStruct(
+                        id=str(uuid.uuid4()),
+                        vector=embedding_data.embedding,
+                        payload={"text": key}
+                    )
+                    for key, embedding_data in zip(KEYS, embeddings_response.data)
+                ]
+                
+                await self.client.upsert(
+                    collection_name=self.collection_name,
+                    points=points,
+                    wait=True
                 )
-                for key, embedding_data in zip(KEYS, embeddings_response.data)
-            ]
-            
-            await self.client.upsert(
-                collection_name=self.collection_name,
-                points=points,
-                wait=True
-            )
+            except Exception as e:
+                print(f"Failed to initialize vector database: {e}")
+                raise
         
         self.initialized = True
 
@@ -98,19 +102,24 @@ class VectorDB:
         if not self.initialized:
             raise RuntimeError("VectorDB is not initialized. Call `get_instance` to initialize.")
 
-        query_embedding_response = await get_embeddings([query_content])
-        if not query_embedding_response.data:
+        try:
+            query_embedding_response = await get_embeddings([query_content])
+            if not query_embedding_response.data:
+                return []
+
+            query_vector = query_embedding_response.data[0].embedding
+
+            hits = await self.client.search(
+                collection_name=self.collection_name,
+                query_vector=query_vector,
+                limit=limit,
+            )
+
+            return [VectorSearchResult.from_scored_point(hit) for hit in hits]
+        except Exception as e:
+            print(f"Failed to search in vector database: {e}")
+            # 返回空列表而不是抛出异常，以避免整个请求失败
             return []
-
-        query_vector = query_embedding_response.data[0].embedding
-
-        hits = await self.client.search(
-            collection_name=self.collection_name,
-            query_vector=query_vector,
-            limit=limit,
-        )
-
-        return [VectorSearchResult.from_scored_point(hit) for hit in hits]
 
     async def delete_collection(self):
         """删除向量数据库中的集合。"""
