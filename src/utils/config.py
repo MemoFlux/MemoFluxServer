@@ -16,5 +16,23 @@ class UtilsConfig(BaseSettings):
         description="Jina API Key",
         validation_alias="JINA_API_KEY"
     )
+    
+    collection_name: str = Field(
+        default="memo_flux",
+        description="Collection Name",
+        validation_alias="COLLECTION_NAME"
+    )
+    
+    qdrant_url: str = Field(
+        default="http://localhost:6333",
+        description="Qdrant URL",
+        validation_alias="QDRANT_URL"
+    )
+    
+    qdrant_api_key: str = Field(
+        default="",
+        description="Qdrant API Key",
+        validation_alias="QDRANT_API_KEY"
+    )
 
 utils_config = UtilsConfig()
