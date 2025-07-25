@@ -84,7 +84,7 @@ class VectorDB:
         
         self.initialized = True
 
-    async def search(self, query_content: List[Union[str, JinaTextInput, JinaImageInput]], limit: int = 5) -> List[VectorSearchResult]:
+    async def search(self, query_content: Union[str, JinaTextInput, JinaImageInput], limit: int = 5) -> List[VectorSearchResult]:
         """
         在向量数据库中搜索与查询文本相似的向量。
 
