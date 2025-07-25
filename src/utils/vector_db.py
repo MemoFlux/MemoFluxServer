@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Union
 import uuid
 from qdrant_client import AsyncQdrantClient
@@ -5,6 +6,7 @@ from qdrant_client.models import VectorParams, Distance, PointStruct
 
 from .embedding import get_embeddings
 from .schemas import JinaTextInput, JinaImageInput, VectorSearchResult
+from .config import utils_config
 
 
 KEYS: List[str] = [
@@ -17,31 +19,34 @@ KEYS: List[str] = [
 ]
 
 class VectorDB:
-    """
-    向量数据库类，用于管理向量数据库的创建和初始化。
-    
-    Args:
-        collection_name: 集合名称
-        url: 数据库URL
-        api_key: 数据库API密钥
-    
-    Methods:
-        create: 创建向量数据库实例
-    """
+    _instance = None
+    _lock = asyncio.Lock()
+
     def __init__(self, collection_name: str, url: str, api_key: str):
+        """
+        私有构造函数，请使用 get_instance() 获取实例。
+        """
         self.client = AsyncQdrantClient(url=url, api_key=api_key)
         self.collection_name = collection_name
         self.initialized = False
-    
+
     @classmethod
-    async def create(cls, collection_name: str, url: str, api_key: str) -> "VectorDB":
-        instance = cls(collection_name, url, api_key)
-        await instance._initialize()
-        instance.initialized = True
-        return instance
-        
-    async def __init_async__(self) -> None:
-        await self._initialize()
+    async def get_instance(cls) -> "VectorDB":
+        """
+        获取 VectorDB 的单例实例。
+        如果实例不存在，则会异步创建并初始化它。
+        """
+        if cls._instance is None:
+            async with cls._lock:
+                if cls._instance is None:
+                    instance = VectorDB(
+                        collection_name=utils_config.collection_name,
+                        url=utils_config.qdrant_url,
+                        api_key=utils_config.qdrant_api_key,
+                    )
+                    await instance._initialize()
+                    cls._instance = instance
+        return cls._instance
 
     async def _initialize(self) -> None:
         """将预定义的关键词嵌入并存储到向量数据库中。"""
@@ -54,25 +59,25 @@ class VectorDB:
 
         # 检查集合是否已经有数据，避免重复初始化
         collection_info = await self.client.get_collection(collection_name=self.collection_name)
-        if collection_info.points_count is not None and collection_info.points_count > 0:
-            return
-
-        embeddings_response = await get_embeddings([JinaTextInput(text=key) for key in KEYS])
-        
-        points = [
-            PointStruct(
-                id=str(uuid.uuid4()),
-                vector=embedding_data.embedding,
-                payload={"text": key}
+        if collection_info.points_count is None or collection_info.points_count == 0:
+            embeddings_response = await get_embeddings([JinaTextInput(text=key) for key in KEYS])
+            
+            points = [
+                PointStruct(
+                    id=str(uuid.uuid4()),
+                    vector=embedding_data.embedding,
+                    payload={"text": key}
+                )
+                for key, embedding_data in zip(KEYS, embeddings_response.data)
+            ]
+            
+            await self.client.upsert(
+                collection_name=self.collection_name,
+                points=points,
+                wait=True
             )
-            for key, embedding_data in zip(KEYS, embeddings_response.data)
-        ]
         
-        await self.client.upsert(
-            collection_name=self.collection_name,
-            points=points,
-            wait=True
-        )
+        self.initialized = True
 
     async def search(self, query_content: List[Union[str, JinaTextInput, JinaImageInput]], limit: int = 5) -> List[VectorSearchResult]:
         """
@@ -86,7 +91,7 @@ class VectorDB:
             搜索结果列表
         """
         if not self.initialized:
-            raise RuntimeError("VectorDB is not initialized. Call `create` to initialize.")
+            raise RuntimeError("VectorDB is not initialized. Call `get_instance` to initialize.")
 
         query_embedding_response = await get_embeddings(query_content)
         if not query_embedding_response.data:
@@ -101,5 +106,3 @@ class VectorDB:
         )
 
         return [VectorSearchResult.from_scored_point(hit) for hit in hits]
-    
-    

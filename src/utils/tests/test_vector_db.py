@@ -16,6 +16,15 @@ MOCK_URL = "http://localhost:6333"
 MOCK_API_KEY = "test-key"
 MOCK_COLLECTION_NAME = "test-collection"
 
+
+@pytest.fixture(autouse=True)
+def reset_singleton():
+    """在每个测试用例运行后重置 VectorDB 单例。"""
+    VectorDB._instance = None
+    yield
+    VectorDB._instance = None
+
+
 @pytest.fixture
 def mock_keys_embedding_response():
     """为 KEYS 列表模拟一个 Jina API 响应。"""
@@ -51,17 +60,22 @@ def mock_qdrant_client():
     return client
 
 @patch("src.utils.vector_db.get_embeddings")
+@patch("src.utils.vector_db.utils_config")
 @patch("src.utils.vector_db.AsyncQdrantClient")
 async def test_create_and_initialize_new_collection(
-    mock_qdrant_constructor, mock_get_embeddings, mock_qdrant_client, mock_keys_embedding_response
+    mock_qdrant_constructor, mock_utils_config, mock_get_embeddings, mock_qdrant_client, mock_keys_embedding_response
 ):
     """测试在一个新集合上成功创建和初始化 VectorDB。"""
     mock_qdrant_constructor.return_value = mock_qdrant_client
     mock_get_embeddings.return_value = mock_keys_embedding_response
+    mock_utils_config.collection_name = MOCK_COLLECTION_NAME
+    mock_utils_config.qdrant_url = MOCK_URL
+    mock_utils_config.qdrant_api_key = MOCK_API_KEY
     
-    db = await VectorDB.create(MOCK_COLLECTION_NAME, MOCK_URL, MOCK_API_KEY)
+    db = await VectorDB.get_instance()
 
     assert db.initialized is True
+    assert db.collection_name == MOCK_COLLECTION_NAME
     mock_qdrant_client.collection_exists.assert_awaited_once_with(collection_name=MOCK_COLLECTION_NAME)
     mock_qdrant_client.create_collection.assert_awaited_once()
     mock_get_embeddings.assert_awaited_once()
@@ -76,19 +90,23 @@ async def test_create_and_initialize_new_collection(
     assert len(upserted_points) == len(KEYS)
 
 @patch("src.utils.vector_db.get_embeddings")
+@patch("src.utils.vector_db.utils_config")
 @patch("src.utils.vector_db.AsyncQdrantClient")
 async def test_initialize_with_existing_populated_collection(
-    mock_qdrant_constructor, mock_get_embeddings, mock_qdrant_client
+    mock_qdrant_constructor, mock_utils_config, mock_get_embeddings, mock_qdrant_client
 ):
     """测试当集合已存在且有数据时，初始化应跳过嵌入和上传步骤。"""
     mock_qdrant_constructor.return_value = mock_qdrant_client
     mock_qdrant_client.collection_exists.return_value = True
+    mock_utils_config.collection_name = MOCK_COLLECTION_NAME
+    mock_utils_config.qdrant_url = MOCK_URL
+    mock_utils_config.qdrant_api_key = MOCK_API_KEY
     
     populated_collection_info = MagicMock()
     populated_collection_info.points_count = len(KEYS)
     mock_qdrant_client.get_collection.return_value = populated_collection_info
     
-    db = await VectorDB.create(MOCK_COLLECTION_NAME, MOCK_URL, MOCK_API_KEY)
+    db = await VectorDB.get_instance()
 
     assert db.initialized is True
     mock_qdrant_client.collection_exists.assert_awaited_once_with(collection_name=MOCK_COLLECTION_NAME)
@@ -98,14 +116,19 @@ async def test_initialize_with_existing_populated_collection(
     mock_qdrant_client.upsert.assert_not_awaited()
 
 @patch("src.utils.vector_db.get_embeddings")
+@patch("src.utils.vector_db.utils_config")
 @patch("src.utils.vector_db.AsyncQdrantClient")
 async def test_search_successfully(
-    mock_qdrant_constructor, mock_get_embeddings, mock_qdrant_client
+    mock_qdrant_constructor, mock_utils_config, mock_get_embeddings, mock_qdrant_client
 ):
     """测试 search 方法能否成功执行并返回正确格式的结果。"""
     # 初始化 Mock
     mock_qdrant_constructor.return_value = mock_qdrant_client
     mock_qdrant_client.collection_exists.return_value = True
+    mock_utils_config.collection_name = MOCK_COLLECTION_NAME
+    mock_utils_config.qdrant_url = MOCK_URL
+    mock_utils_config.qdrant_api_key = MOCK_API_KEY
+
     populated_collection_info = MagicMock()
     populated_collection_info.points_count = len(KEYS)
     mock_qdrant_client.get_collection.return_value = populated_collection_info
@@ -119,7 +142,7 @@ async def test_search_successfully(
     )
     mock_get_embeddings.return_value = search_response
     
-    db = await VectorDB.create(MOCK_COLLECTION_NAME, MOCK_URL, MOCK_API_KEY)
+    db = await VectorDB.get_instance()
     
     results = await db.search([query_text], limit=3)
     
@@ -136,6 +159,7 @@ async def test_search_successfully(
 
 async def test_search_on_uninitialized_db_raises_error():
     """测试在未初始化的 VectorDB 实例上调用 search 会抛出 RuntimeError。"""
+    # 为了测试未初始化状态，我们直接实例化而不通过 get_instance
     db = VectorDB(MOCK_COLLECTION_NAME, MOCK_URL, MOCK_API_KEY)
     with pytest.raises(RuntimeError, match="VectorDB is not initialized"):
         await db.search(["test query"]) 
