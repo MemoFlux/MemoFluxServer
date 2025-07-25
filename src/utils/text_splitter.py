@@ -1,4 +1,3 @@
-import re
 from typing import List, Set
 
 def greedy_text_splitter(
