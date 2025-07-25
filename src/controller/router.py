@@ -2,8 +2,8 @@ import asyncio
 import json
 from fastapi import APIRouter
 from fastapi import Depends
-from pydantic import BaseModel, Field, model_validator
-from typing import List, Optional
+from pydantic import BaseModel, Field
+from typing import List
 from src.schedules.schemas import Schedule
 from src.knowledge.schemas import KnowledgeRes
 from src.information.schemas import InformationRes

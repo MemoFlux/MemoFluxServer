@@ -144,7 +144,7 @@ async def test_search_successfully(
     
     db = await VectorDB.get_instance()
     
-    results = await db.search([query_text], limit=3)
+    results = await db.search(query_text, limit=3)
     
     mock_get_embeddings.assert_awaited_with([query_text])
     mock_qdrant_client.search.assert_awaited_once_with(
@@ -162,4 +162,4 @@ async def test_search_on_uninitialized_db_raises_error():
     # 为了测试未初始化状态，我们直接实例化而不通过 get_instance
     db = VectorDB(MOCK_COLLECTION_NAME, MOCK_URL, MOCK_API_KEY)
     with pytest.raises(RuntimeError, match="VectorDB is not initialized"):
-        await db.search(["test query"]) 
+        await db.search("test query") 

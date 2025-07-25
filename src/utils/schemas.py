@@ -1,7 +1,6 @@
 from typing import List, Optional, Any, Dict, Union
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from qdrant_client.http import models as rest
-from qdrant_client.http.models import ShardKey, OrderValue, VectorStruct
 
 
 class JinaTextInput(BaseModel):

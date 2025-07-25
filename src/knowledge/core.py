@@ -10,12 +10,10 @@
 - _convert_baml_to_schema: 将 BAML 的 Knowledge 模型转换为本地 Schema 模型
 """
 
-import uuid
 from typing import Union, List
 
 from baml_py import Image
 
-from src.baml_client.async_client import b
 from src.knowledge.interface import KnowledgeInterface
 from src.knowledge.schemas import KnowledgeRes
 from src.baml_client.types import Knowledge
