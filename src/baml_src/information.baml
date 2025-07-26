@@ -1,8 +1,8 @@
 class InfromationItem{
-    header string @description(#"
+    header string | null @description(#"
         信息项的标题
     "#)
-    content string @description(#"
+    content string | null @description(#"
         信息项的具体内容
     "#)
 }
@@ -23,19 +23,19 @@ enum PostType{
 }
 
 class Information{
-    title string @description(#"
+    title string | null @description(#"
         信息的标题
     "#)
-    information_items InfromationItem[] @description(#"
+    information_items InfromationItem[] | null @description(#"
         信息项列表
     "#)
-    post_type string @description(#"
+    post_type string | null @description(#"
         信息的类型
     "#)
-    summary string @description(#"
+    summary string | null @description(#"
         信息的摘要
     "#)
-    tags string[] @description(#"
+    tags string[] | null @description(#"
         对这个信息的标签，该标签不能少于1个，不超过3个
     "#)
 }
@@ -54,7 +54,7 @@ class StreamingInformation{
     summary string @stream.with_state @stream.not_null @description(#"
         信息的摘要
     "#)
-    tags string[] @stream.done @description(#"
+    tags string[] | null @stream.done @description(#"
         对这个信息的标签，该标签不能少于1个，不超过3个
     "#)
 }

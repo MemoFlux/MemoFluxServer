@@ -7,22 +7,22 @@ enum RelationShip {
     "#)
 } 
 class Node{
-    target_id int @description(#"
+    target_id int | null @description(#"
         用来指向相关节点
     "#)
-    relationship RelationShip @description(#"
+    relationship RelationShip | null @description(#"
         用来阐述两个节点之间的关系
     "#)
 }
 
 class KnowledgeItem{
-    id int @description(#"
+    id int | null @description(#"
         知识项的唯一标识符
     "#)
-    header string @description(#"
+    header string | null @description(#"
         知识项的标题
     "#)
-    content string @description(#"
+    content string | null @description(#"
         知识项的具体内容
     "#)
     node Node | null @description(#"
@@ -31,16 +31,16 @@ class KnowledgeItem{
 }
 
 class Knowledge{
-    title string @description(#"
+    title string | null @description(#"
         知识的标题
     "#)
-    knowledge_items KnowledgeItem[] @description(#"
+    knowledge_items KnowledgeItem[] | null @description(#"
         知识项列表
     "#)
-    related_items  string[] @description(#"
+    related_items  string[] | null @description(#"
         可能相关的知识名
     "#)
-    tags string[] @description(#"
+    tags string[] | null @description(#"
         对这个知识的标签，该标签不能少于1个，不超过3个
     "#)
 }
@@ -53,10 +53,10 @@ class StreamingKnowledge{
     knowledge_items KnowledgeItem[] @stream.with_state @description(#"
         知识项列表
     "#)
-    related_items  string[] @stream.done @description(#"
+    related_items  string[] | null @stream.done @description(#"
         可能相关的知识名
     "#)
-    tags string[] @stream.done @description(#"
+    tags string[] | null @stream.done @description(#"
         对这个知识的标签，该标签不能少于1个，不超过3个
     "#)
 }

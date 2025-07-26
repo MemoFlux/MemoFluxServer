@@ -20,8 +20,8 @@
 ## 数据流
 
 ```
-客户端请求 -> /aigen_streaming 路由 -> 流式控制器 -> 
-ScheduleProcessor流式处理 -> 实时返回流式数据 -> 客户端接收
+客户端请求 -> /aigen_streaming 路由 -> 流式控制器 ->
+多个处理器流式处理 -> 实时返回流式数据 -> 客户端接收
 ```
 
 ## 用法示例
@@ -78,7 +78,7 @@ while (true) {
 
 ### 2. 模块化设计
 - 与 `schedules_streaming` 模块无缝集成
-- 为知识和信息模块提供占位符实现
+- 与 `information_streaming` 和 `knowledge_streaming` 模块无缝集成
 - 易于扩展和维护
 
 ### 3. 统一接口
@@ -107,6 +107,7 @@ python -m pytest src/controller_streaming/tests/
 ## 依赖
 
 - `src.schedules_streaming`: 流式日程处理模块
-- `src.controller_streaming.placeholders`: 占位符模块
+- `src.information_streaming`: 流式信息处理模块
+- `src.knowledge_streaming`: 流式知识处理模块
 - `fastapi`: Web 框架
 - `pydantic`: 数据模型定义

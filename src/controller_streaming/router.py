@@ -13,8 +13,8 @@ from typing import Union, List, AsyncGenerator
 from baml_py import Image
 
 from src.schedules_streaming.processor import schedule_processor
-from src.controller_streaming.placeholders.knowledge import knowledge_processor
-from src.controller_streaming.placeholders.information import information_processor
+from src.knowledge_streaming.processor import knowledge_processor
+from src.information_streaming.processor import information_processor
 from src.controller_streaming.schemas import (
     AIStreamingReq, 
     AIStreamingRes, 
@@ -59,6 +59,8 @@ async def stream_processor(
     Yields:
         str: SSE 格式的流式数据
     """
+    logger.debug(f"[CONTROLLER_DEBUG] 开始流式处理，内容类型: {type(content)}, 标签: {tags}")
+    
     # 发送开始状态
     start_event = StreamEvent(
         AIStreamingRes(
@@ -99,17 +101,23 @@ async def stream_processor(
     
     # 处理知识流
     try:
-        async for partial_result in knowledge_processor.process_from_content_stream(content, tags):
+        logger.debug(f"[CONTROLLER_DEBUG] 开始调用知识处理器流式处理")
+        async for partial_result in knowledge_processor.process_from_content_stream(content, tags=tags):
+            logger.debug(f"[CONTROLLER_DEBUG] 知识处理器返回数据块: {type(partial_result)}")
             event = StreamEvent(
                 AIStreamingRes(
                     type=StreamingDataType.KNOWLEDGE,
                     status=StreamingStatus.PROGRESS,
-                    data=partial_result,
+                    data=partial_result.model_dump() if hasattr(partial_result, 'model_dump') else {},
                     message=None
                 )
             )
             yield event.encode()
+        logger.debug(f"[CONTROLLER_DEBUG] 知识处理器流式处理完成")
     except Exception as e:
+        logger.error(f"[CONTROLLER_DEBUG] 知识处理器出错: {str(e)}")
+        import traceback
+        logger.error(f"[CONTROLLER_DEBUG] 知识处理器错误堆栈: {traceback.format_exc()}")
         error_event = StreamEvent(
             AIStreamingRes(
                 type=StreamingDataType.STATUS,
@@ -122,17 +130,23 @@ async def stream_processor(
     
     # 处理信息流
     try:
-        async for partial_result in information_processor.process_from_content_stream(content, tags):
+        logger.debug(f"[CONTROLLER_DEBUG] 开始调用信息处理器流式处理")
+        async for partial_result in information_processor.process_from_content_stream(content, tags=tags):
+            logger.debug(f"[CONTROLLER_DEBUG] 信息处理器返回数据块: {type(partial_result)}")
             event = StreamEvent(
                 AIStreamingRes(
                     type=StreamingDataType.INFORMATION,
                     status=StreamingStatus.PROGRESS,
-                    data=partial_result,
+                    data=partial_result.model_dump() if hasattr(partial_result, 'model_dump') else {},
                     message=None
                 )
             )
             yield event.encode()
+        logger.debug(f"[CONTROLLER_DEBUG] 信息处理器流式处理完成")
     except Exception as e:
+        logger.error(f"[CONTROLLER_DEBUG] 信息处理器出错: {str(e)}")
+        import traceback
+        logger.error(f"[CONTROLLER_DEBUG] 信息处理器错误堆栈: {traceback.format_exc()}")
         error_event = StreamEvent(
             AIStreamingRes(
                 type=StreamingDataType.STATUS,
