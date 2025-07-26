@@ -7,7 +7,7 @@ enum RelationShip {
     "#)
 } 
 class Node{
-    targert_id int @description(#"
+    target_id int @description(#"
         用来指向相关节点
     "#)
     relationship RelationShip @description(#"

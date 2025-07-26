@@ -50,7 +50,7 @@ function ScheduleManager(content:string | image) -> Schedule {
         """
         {{ctx.output_format}}
 
-        注：如果图片中没有日程相关的安排，请设置title和tasks均为空。
+        注：如果图片中没有日程相关的安排，请设置title和tasks均为空。category为"未分类"
     "#
 }
 
