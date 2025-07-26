@@ -23,7 +23,7 @@ class KnowledgeItem{
         知识项的标题
     "#)
     content string @description(#"
-        知识项的具体内容
+        知识项的具体内容，你有义务返回一个完整语义的内容，不能出现错字或语法错误
     "#)
     node Node | null @description(#"
         知识项对应的节点信息
@@ -51,7 +51,8 @@ function KnowledgeStruct(input:string | image,tag:string[]) -> Knowledge {
         你是一个知识图谱构建专家。这是用户希望结构化的内容：
 
         {{ input }}
-        这是已经存在的tag，{{ tag }}。你需要尽量使用其中已存在的tag，在没有符合的tag时可以提供新的
+        这是已经存在的tag，{{ tag }}。你需要尽量使用其中已存在的tag，在没有符合的tag时可以提供新的.
+        你有义务尽可能的减少新tag的创建。
         请使用中文回复
         Example: {
       "id": 1,
