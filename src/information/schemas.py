@@ -10,6 +10,6 @@ class InformationRes(Information):
     category: str
     
     
-Information.model_rebuild()
+InformationItem.model_rebuild()
 Information.model_rebuild()
 InformationRes.model_rebuild()
