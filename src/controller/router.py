@@ -40,7 +40,7 @@ class AIRes(BaseModel):
 
 
 @router.post("/",response_model=AIRes)
-async  def create_ai_req(req: AIReq) -> AIRes:
+async  def create_ai_req(req: AIReq, _: str = Depends(get_current_user)) -> AIRes:
     """
     创建AI请求
     - content: 文本内容
@@ -52,7 +52,7 @@ async  def create_ai_req(req: AIReq) -> AIRes:
     rag_client = await vector_db.VectorDB.get_instance()
     logger.debug("rag_client created")
     if (req.isimage == 1):
-        image_url =  base64_to_URL(req.content)
+        image_url =  await base64_to_URL(req.content)
         if image_url is None or image_url == "":
             raise HTTPException(status_code=400, detail="Image upload failed")
 
