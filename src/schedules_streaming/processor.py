@@ -23,11 +23,12 @@ from baml_py import Image
 
 from src.common.streaming_output.base import LLMContentProcessor
 from src.baml_client.async_client import b
-from src.baml_client.types import Schedule as BamlSchedule, StreamingSchedule as BamlStreamingSchedule
+from src.baml_client.types import Schedule as BamlSchedule
+from src.baml_client.stream_types import StreamingSchedule as BamlStreamingSchedule
 from .schemas import Schedule, Task, PartialStreamingSchedule
 
 
-class ScheduleProcessor(LLMContentProcessor[Schedule, PartialStreamingSchedule]):
+class ScheduleProcessor(LLMContentProcessor[Schedule, BamlStreamingSchedule]):
     """
     日程管理处理器
     
@@ -62,7 +63,7 @@ class ScheduleProcessor(LLMContentProcessor[Schedule, PartialStreamingSchedule])
         
         return result
     
-    async def _call_llm_stream(self, content: Union[str, Image], **kwargs) -> AsyncGenerator[PartialStreamingSchedule, None]:
+    async def _call_llm_stream(self, content: Union[str, Image], **kwargs) -> AsyncGenerator[BamlStreamingSchedule, None]:
         """
         调用日程流式管理的 BAML 函数
         
@@ -78,8 +79,9 @@ class ScheduleProcessor(LLMContentProcessor[Schedule, PartialStreamingSchedule])
         # 调用 BAML 的 ScheduleManagerStream 函数
         stream = b.stream.ScheduleManagerStream(content=content)
         async for partial in stream:
-            # 将 BAML 流式结果转换为 PartialStreamingSchedule
-            yield PartialStreamingSchedule(**partial.model_dump())
+            # 直接将 BAML 流式结果强制转换为 PartialStreamingSchedule
+            # 由于 PartialStreamingSchedule 继承自 BamlStreamingSchedule，这应该是安全的
+            yield partial
     
     def _convert_to_schema(self, baml_result: BamlSchedule, original_content: str, **kwargs) -> Schedule:
         """

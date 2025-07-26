@@ -17,7 +17,8 @@ from typing import List, Optional, Literal, Generic, TypeVar
 from pydantic import BaseModel, Field
 
 # 从 BAML 导入原始类型
-from src.baml_client.types import Task as BamlTask, Schedule as BamlSchedule, StreamingSchedule as BamlStreamingSchedule
+from src.baml_client.types import Task as BamlTask, Schedule as BamlSchedule
+from src.baml_client.stream_types import StreamingSchedule as BamlStreamingSchedule
 
 # 定义泛型类型变量
 T_co = TypeVar('T_co', covariant=True)
@@ -65,6 +66,6 @@ class PartialStreamingSchedule(BamlStreamingSchedule):
     流式日程处理的部分类型
     
     这是在流式处理过程中，每个数据块的实际类型。
-    在实际项目中，这个类型应该由 BAML 根据 .baml 文件自动生成。
+    直接继承 BAML 自动生成的 StreamingSchedule 类型，保持完全兼容。
     """
     pass
