@@ -59,7 +59,7 @@ class KnowledgeCore(KnowledgeInterface):
         knowledge = await call_llm(image, tag)
 
         # 转换为本地 Schema 模型
-        knowledgeRes = self._convert_baml_to_schema(knowledge, "知识")
+        knowledgeRes = self._convert_baml_to_schema(knowledge, "image_content")
 
         return knowledgeRes
 

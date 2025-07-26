@@ -222,8 +222,10 @@ async def test_stream_error_handling():
     """测试流式错误处理"""
 
     # 对于错误情况，我们简单地模拟异常
-    async def mock_error_stream():
+    async def mock_error_stream(*args, **kwargs):
         raise Exception("模拟错误")
+        # 添加一个 yield 语句使其成为异步生成器
+        yield
 
     schedule_core = ScheduleCore()
 
