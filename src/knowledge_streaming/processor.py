@@ -82,25 +82,13 @@ class KnowledgeProcessor(LLMContentProcessor[Knowledge, BamlStreamingKnowledge])
         chunk_count = 0
         async for partial in stream:
             chunk_count += 1
-            self.logger.debug(f"[DEBUG] 处理第 {chunk_count} 个数据块")
-            
-            # 详细记录原始 partial 的状态
-            self.logger.debug(f"[DEBUG] 原始 partial 类型: {type(partial)}")
-            
-            # 检查关键字段的值
-            if hasattr(partial, 'related_items'):
-                self.logger.debug(f"[DEBUG] related_items 值: {partial.related_items} (类型: {type(partial.related_items)})")
-            if hasattr(partial, 'tags'):
-                self.logger.debug(f"[DEBUG] tags 值: {partial.tags} (类型: {type(partial.tags)})")
             
             # 直接修复 None 值，简单有效
             if hasattr(partial, 'related_items') and partial.related_items is None:
                 partial.related_items = []
-                self.logger.debug(f"[DEBUG] 修复 related_items None -> []")
                 
             if hasattr(partial, 'tags') and partial.tags is None:
                 partial.tags = []
-                self.logger.debug(f"[DEBUG] 修复 tags None -> []")
             
             # 处理 knowledge_items 中的 None 字段
             if hasattr(partial, 'knowledge_items') and partial.knowledge_items is not None:
@@ -117,31 +105,25 @@ class KnowledgeProcessor(LLMContentProcessor[Knowledge, BamlStreamingKnowledge])
                             # 修复 id 字段
                             if hasattr(item, 'id') and item.id is None:
                                 item.id = i + 1  # 使用基于1的索引作为默认ID
-                                self.logger.debug(f"[DEBUG] 修复 knowledge_items[{i}].id None -> {item.id}")
                             
                             # 修复 header 字段
                             if hasattr(item, 'header') and item.header is None:
                                 item.header = ""
-                                self.logger.debug(f"[DEBUG] 修复 knowledge_items[{i}].header None -> ''")
                             
                             # 修复 content 字段
                             if hasattr(item, 'content') and item.content is None:
                                 item.content = ""
-                                self.logger.debug(f"[DEBUG] 修复 knowledge_items[{i}].content None -> ''")
                             
                             # 修复 node 字段中的 None 值
                             if hasattr(item, 'node') and item.node is not None:
                                 # 修复 target_id 字段
                                 if hasattr(item.node, 'target_id') and item.node.target_id is None:
                                     item.node.target_id = 1  # 默认指向第一个节点
-                                    self.logger.debug(f"[DEBUG] 修复 knowledge_items[{i}].node.target_id None -> 1")
                                 
                                 # 修复 relationship 字段
                                 if hasattr(item.node, 'relationship') and item.node.relationship is None:
                                     item.node.relationship = RelationShip.CHILD  # 默认关系为子节点
-                                    self.logger.debug(f"[DEBUG] 修复 knowledge_items[{i}].node.relationship None -> 'CHILD'")
             
-            self.logger.debug(f"[DEBUG] 修复后，返回数据块")
             yield partial
     
     def _convert_to_schema(self, baml_result: BamlKnowledge, original_content: str, tags: List[str] = [], **kwargs) -> Knowledge:
@@ -205,7 +187,6 @@ class KnowledgeProcessor(LLMContentProcessor[Knowledge, BamlStreamingKnowledge])
         if isinstance(content, str):
             # 清理多余的空白字符
             cleaned = ' '.join(content.split())
-            self.logger.debug(f"文本预处理：原长度 {len(content)}, 清理后长度 {len(cleaned)}")
             return cleaned
         return content
 

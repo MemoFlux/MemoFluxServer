@@ -179,27 +179,25 @@ class LLMContentProcessor(Generic[T, T_Stream], ABC):
             chunk_index = 0
             async for chunk in self._call_llm_stream(processed_text, **kwargs):
                 chunk_index += 1
-                self.logger.debug(f"[BASE_DEBUG] 接收到第 {chunk_index} 个数据块，类型: {type(chunk)}")
                 
                 try:
                     # 尝试验证数据块
                     if hasattr(chunk, 'model_validate') and hasattr(chunk, 'model_dump'):
                         chunk.model_validate(chunk.model_dump())  # type: ignore
-                        self.logger.debug(f"[BASE_DEBUG] 数据块 {chunk_index} 验证成功")
                     
                     yield chunk
                     
                 except Exception as chunk_error:
-                    self.logger.error(f"[BASE_DEBUG] 数据块 {chunk_index} 验证失败: {chunk_error}")
-                    self.logger.error(f"[BASE_DEBUG] 数据块内容: {chunk}")
-                    self.logger.error(f"[BASE_DEBUG] 数据块字段: {list(chunk.model_fields.keys()) if hasattr(chunk, 'model_fields') else 'No model_fields'}")  # type: ignore
+                    self.logger.error(f"数据块 {chunk_index} 验证失败: {chunk_error}")
+                    self.logger.error(f"数据块内容: {chunk}")
+                    self.logger.error(f"数据块字段: {list(chunk.model_fields.keys()) if hasattr(chunk, 'model_fields') else 'No model_fields'}")  # type: ignore
                     
                     # 检查具体的字段值
                     if hasattr(chunk, 'model_fields'):
                         for field_name in getattr(chunk, 'model_fields', {}):
                             if hasattr(chunk, field_name):
                                 field_value = getattr(chunk, field_name)
-                                self.logger.error(f"[BASE_DEBUG] 字段 {field_name}: {field_value} (类型: {type(field_value)})")
+                                self.logger.error(f"字段 {field_name}: {field_value} (类型: {type(field_value)})")
                     
                     # 重新抛出异常，让上层处理
                     raise chunk_error
@@ -208,9 +206,6 @@ class LLMContentProcessor(Generic[T, T_Stream], ABC):
             
         except Exception as e:
             self.logger.error(f"流式文本处理失败: {str(e)}")
-            # 添加更详细的错误信息
-            import traceback
-            self.logger.error(f"[BASE_DEBUG] 完整错误堆栈: {traceback.format_exc()}")
             raise
     
     async def process_from_image_stream(self, image: Image, **kwargs) -> AsyncGenerator[T_Stream, None]:

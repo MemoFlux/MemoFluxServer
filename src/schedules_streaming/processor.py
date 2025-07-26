@@ -158,7 +158,6 @@ class ScheduleProcessor(LLMContentProcessor[Schedule, BamlStreamingSchedule]):
         if isinstance(content, str):
             # 清理多余的空白字符
             cleaned = ' '.join(content.split())
-            self.logger.debug(f"文本预处理：原长度 {len(content)}, 清理后长度 {len(cleaned)}")
             return cleaned
         return content
 

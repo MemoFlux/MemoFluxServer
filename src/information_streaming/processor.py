@@ -82,19 +82,10 @@ class InformationProcessor(LLMContentProcessor[Information, BamlStreamingInforma
         chunk_count = 0
         async for partial in stream:
             chunk_count += 1
-            self.logger.debug(f"[DEBUG] 处理第 {chunk_count} 个数据块")
-            
-            # 详细记录原始 partial 的状态
-            self.logger.debug(f"[DEBUG] 原始 partial 类型: {type(partial)}")
-            
-            # 检查关键字段的值
-            if hasattr(partial, 'tags'):
-                self.logger.debug(f"[DEBUG] tags 值: {partial.tags} (类型: {type(partial.tags)})")
             
             # 直接修复 None 值，简单有效
             if hasattr(partial, 'tags') and partial.tags is None:
                 partial.tags = []
-                self.logger.debug(f"[DEBUG] 修复 tags None -> []")
             
             # 处理 information_items 中的 None 字段
             if hasattr(partial, 'information_items') and partial.information_items is not None:
@@ -111,14 +102,11 @@ class InformationProcessor(LLMContentProcessor[Information, BamlStreamingInforma
                             # 修复 header 字段
                             if hasattr(item, 'header') and item.header is None:
                                 item.header = ""
-                                self.logger.debug(f"[DEBUG] 修复 information_items[{i}].header None -> ''")
                             
                             # 修复 content 字段
                             if hasattr(item, 'content') and item.content is None:
                                 item.content = ""
-                                self.logger.debug(f"[DEBUG] 修复 information_items[{i}].content None -> ''")
             
-            self.logger.debug(f"[DEBUG] 修复后，返回数据块")
             yield partial
     
     def _convert_to_schema(self, baml_result: BamlInformation, original_content: str, tags: List[str] = [], **kwargs) -> Information:
@@ -183,7 +171,6 @@ class InformationProcessor(LLMContentProcessor[Information, BamlStreamingInforma
         if isinstance(content, str):
             # 清理多余的空白字符
             cleaned = ' '.join(content.split())
-            self.logger.debug(f"文本预处理：原长度 {len(content)}, 清理后长度 {len(cleaned)}")
             return cleaned
         return content
 

@@ -59,8 +59,6 @@ async def stream_processor(
     Yields:
         str: SSE 格式的流式数据
     """
-    logger.debug(f"[CONTROLLER_DEBUG] 开始流式处理，内容类型: {type(content)}, 标签: {tags}")
-    
     # 发送开始状态
     start_event = StreamEvent(
         AIStreamingRes(
@@ -86,7 +84,6 @@ async def stream_processor(
                     message=None
                 )
             )
-            print(event.encode())
             yield event.encode()
     except Exception as e:
         error_event = StreamEvent(
@@ -101,9 +98,7 @@ async def stream_processor(
     
     # 处理知识流
     try:
-        logger.debug(f"[CONTROLLER_DEBUG] 开始调用知识处理器流式处理")
         async for partial_result in knowledge_processor.process_from_content_stream(content, tags=tags):
-            logger.debug(f"[CONTROLLER_DEBUG] 知识处理器返回数据块: {type(partial_result)}")
             event = StreamEvent(
                 AIStreamingRes(
                     type=StreamingDataType.KNOWLEDGE,
@@ -113,11 +108,7 @@ async def stream_processor(
                 )
             )
             yield event.encode()
-        logger.debug(f"[CONTROLLER_DEBUG] 知识处理器流式处理完成")
     except Exception as e:
-        logger.error(f"[CONTROLLER_DEBUG] 知识处理器出错: {str(e)}")
-        import traceback
-        logger.error(f"[CONTROLLER_DEBUG] 知识处理器错误堆栈: {traceback.format_exc()}")
         error_event = StreamEvent(
             AIStreamingRes(
                 type=StreamingDataType.STATUS,
@@ -130,9 +121,7 @@ async def stream_processor(
     
     # 处理信息流
     try:
-        logger.debug(f"[CONTROLLER_DEBUG] 开始调用信息处理器流式处理")
         async for partial_result in information_processor.process_from_content_stream(content, tags=tags):
-            logger.debug(f"[CONTROLLER_DEBUG] 信息处理器返回数据块: {type(partial_result)}")
             event = StreamEvent(
                 AIStreamingRes(
                     type=StreamingDataType.INFORMATION,
@@ -142,11 +131,7 @@ async def stream_processor(
                 )
             )
             yield event.encode()
-        logger.debug(f"[CONTROLLER_DEBUG] 信息处理器流式处理完成")
     except Exception as e:
-        logger.error(f"[CONTROLLER_DEBUG] 信息处理器出错: {str(e)}")
-        import traceback
-        logger.error(f"[CONTROLLER_DEBUG] 信息处理器错误堆栈: {traceback.format_exc()}")
         error_event = StreamEvent(
             AIStreamingRes(
                 type=StreamingDataType.STATUS,
@@ -192,7 +177,6 @@ async def create_ai_streaming_req(
             if image_url is None or image_url == "":
                 raise HTTPException(status_code=400, detail="图像上传失败")
             
-            logger.debug("图像 URL: %s", image_url)
             content = Image.from_url(image_url)
         else:
             # 处理文本
