@@ -5,3 +5,4 @@ __pycache__
 temp*
 baml_client
 database.db
+.env
