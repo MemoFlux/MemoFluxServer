@@ -40,10 +40,11 @@ class Schedule {
     "#)
 }
 
-function ScheduleManager(content:string | image) -> Schedule {
+function ScheduleManager(content:string | image,datetime:string) -> Schedule {
     client Gemini
     prompt #"
         你是一个日程管理专家，请根据用户输入的文本，生成一个日程安排。始终使用和用户输入的文本相同的语言进行回答。
+        现在的日期是{{ datetime }}
         用户输入的文本是：
         """
         {{ content }}
@@ -58,6 +59,7 @@ test IsScheduleSingleTask1 {
     functions [ScheduleManager]
     args {
         content "今天下午两点左右记得去公司开会，差不多两小时吧"
+        datetime "2025-7-26"
     }
 }
 
@@ -65,6 +67,8 @@ test IsScheduleSingleTask2 {
     functions [ScheduleManager]
     args {
         content "明天早上一定要记得赶八点的飞机！"
+        datetime "2025-7-26"
+
     }
 }
 
@@ -72,6 +76,8 @@ test IsScheduleMultiTask1 {
     functions [ScheduleManager]
     args {
         content "今天下午两点左右记得去公司开会，差不多两小时吧。然后晚上六点去健身房锻炼，差不多一小时。"
+        datetime "2025-7-26"
+
     }
 }
 
@@ -79,6 +85,8 @@ test IsScheduleMultiTask2 {
     functions [ScheduleManager]
     args {
         content "明天早上一定要记得赶八点的飞机！然后下飞机后赶紧吃早餐。"
+        datetime "2025-7-26"
+
     }
 }
 
@@ -88,6 +96,7 @@ test IsScheduleImage1 {
         content {
             file "sample/test_img_1.png"
         }
+        datetime "2025-7-26"
     }
 }
 
@@ -97,5 +106,7 @@ test NotScheduleImage1 {
         content {
             url "https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png"
         }
+        datetime "2025-7-26"
+
     }
 }

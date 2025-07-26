@@ -4,7 +4,8 @@ from baml_py import Image
 
 from src.baml_client.async_client import b
 from src.baml_client.types import Schedule as BamlSchedule
+from src.utils.now_time import get_current_date
 
 async def call_llm(content: Union[str, Image]) -> BamlSchedule:
-    res = await b.ScheduleManager(content)
+    res = await b.ScheduleManager(content,get_current_date())
     return BamlSchedule.model_validate(res)
