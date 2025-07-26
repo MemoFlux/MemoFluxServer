@@ -30,7 +30,7 @@ class Task {
 
 class Schedule {
     title string @description(#"
-        标题，需要具体且简洁，不能以“今日待办”、“今日计划”等模糊的标题
+        标题，需要具体且简洁，不能以"今日待办"、"今日计划"等模糊的标题
     "#)
     category string @description(#"
         分类
@@ -40,10 +40,44 @@ class Schedule {
     "#)
 }
 
+// 流式版本的 Schedule 类
+class StreamingSchedule {
+    title string @stream.with_state @stream.not_null @description(#"
+        标题，需要具体且简洁，不能以"今日待办"、"今日计划"等模糊的标题
+    "#)
+    category string @stream.done @stream.not_null @description(#"
+        分类
+    "#)
+    tasks Task[] @stream.with_state @description(#"
+        事项列表
+    "#)
+}
+
 function ScheduleManager(content:string | image) -> Schedule {
     client Gemini
     prompt #"
         你是一个日程管理专家，请根据用户输入的文本，生成一个日程安排。始终使用和用户输入的文本相同的语言进行回答。
+        用户输入的文本是：
+        """
+        {{ content }}
+        """
+        {{ctx.output_format}}
+
+        注：如果图片中没有日程相关的安排，请设置title和tasks均为空。category为"未分类"
+    "#
+}
+
+// 流式版本的日程管理函数
+function ScheduleManagerStream(content:string | image) -> StreamingSchedule {
+    client Gemini
+    prompt #"
+        你是一个日程管理专家，请根据用户输入的文本，生成一个日程安排。始终使用和用户输入的文本相同的语言进行回答。
+
+        重要：请按照以下顺序逐步生成结果，每一步都要完整且详细：
+        1. 首先生成标题
+        2. 然后确定分类
+        3. 最后逐个生成事项列表
+
         用户输入的文本是：
         """
         {{ content }}
