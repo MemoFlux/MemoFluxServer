@@ -24,6 +24,7 @@ class KnowledgeItem{
     "#)
     content string @description(#"
         知识项的具体内容，你有义务返回一个完整语义的内容，不能出现错字或语法错误
+        如果信息字符长度超过20，请在该字段头部添加一个跟内容相符的emoji
     "#)
     node Node | null @description(#"
         知识项对应的节点信息

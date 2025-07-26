@@ -1,9 +1,10 @@
-class InfromationItem{
+class InformationItem{
     header string @description(#"
-        信息项的标题
+        信息项的标题，你有义务对信息的内容进行高度概括
     "#)
     content string @description(#"
         信息项的具体内容，你有义务返回一个完整语义的内容，不能出现错字或语法错误
+        如果信息字符长度超过20，请在该字段头部添加一个跟内容相符的emoji
     "#)
 }
 
@@ -26,7 +27,7 @@ class Information{
     title string @description(#"
         信息的标题
     "#)
-    information_items InfromationItem[] @description(#"
+    information_items InformationItem[] @description(#"
         信息项列表
     "#)
     post_type string @description(#"
