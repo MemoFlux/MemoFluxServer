@@ -7,6 +7,7 @@ from fastapi.concurrency import asynccontextmanager
 from src.controller.router import router as controller_router
 from src.controller_streaming.router import router as controller_streaming_router
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)

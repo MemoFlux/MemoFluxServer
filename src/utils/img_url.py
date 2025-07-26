@@ -1,5 +1,3 @@
-
-
 import aiohttp
 import json
 import asyncio
@@ -15,35 +13,38 @@ async def base64_to_URL(base64_str: str) -> Optional[str]:
     # 确保base64字符串格式正确
     if not base64_str:
         return None
-    
+
     # 如果base64字符串包含data URI前缀，需要移除
-    if base64_str.startswith('data:'):
+    if base64_str.startswith("data:"):
         # 提取实际的base64数据
-        if 'base64,' in base64_str:
-            base64_str = base64_str.split('base64,')[1]
-    
+        if "base64," in base64_str:
+            base64_str = base64_str.split("base64,")[1]
+
     url = "https://www.picgo.net/api/1/upload"
 
     # 正确的payload格式
-    payload = {
-        "source": base64_str
-    }
-    
+    payload = {"source": base64_str}
+
     headers = {
-        'X-API-Key': 'chv_Sr5Xh_f326f7265114c537b46345d95ab1df7cfe17bac631a3f9ad6be0e18826b97e48622b20404fe84eccf49d261abc1ae6211764c573a326d0debad46980b8b7d557'
+        "X-API-Key": "chv_Sr5Xh_f326f7265114c537b46345d95ab1df7cfe17bac631a3f9ad6be0e18826b97e48622b20404fe84eccf49d261abc1ae6211764c573a326d0debad46980b8b7d557"
     }
 
     async with aiohttp.ClientSession() as session:
         try:
-            async with session.post(url, headers=headers, data=payload, timeout=aiohttp.ClientTimeout(total=30)) as response:
+            async with session.post(
+                url,
+                headers=headers,
+                data=payload,
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as response:
                 # 获取响应信息用于调试
                 response_text = await response.text()
-                
+
                 # 打印响应信息用于调试
                 print(f"Status Code: {response.status}")
                 print(f"Response Headers: {response.headers}")
                 print(f"Response Text: {response_text}")
-                
+
                 # 检查响应状态码
                 if response.status == 200:
                     # 尝试解析JSON响应
@@ -53,7 +54,7 @@ async def base64_to_URL(base64_str: str) -> Optional[str]:
                         if "error" in response_data:
                             print(f"API Error: {response_data['error']}")
                             return None
-                        
+
                         # 返回图像URL
                         image_url = response_data.get("image", {}).get("url")
                         if image_url:

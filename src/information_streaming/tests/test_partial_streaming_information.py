@@ -2,8 +2,6 @@
 PartialStreamingInformation 测试
 """
 
-import pytest
-
 from src.information_streaming.schemas import PartialStreamingInformation
 
 
@@ -14,9 +12,9 @@ def test_partial_streaming_information_with_none_tags():
         information_items={"value": [], "state": "Complete"},
         post_type="OTHER_POST",
         summary={"value": "测试摘要", "state": "Complete"},
-        tags=None  # None 值
+        tags=None,  # None 值
     )
-    
+
     # 验证 None 值被正确转换为空列表
     assert partial_information.tags == []
 
@@ -28,8 +26,8 @@ def test_partial_streaming_information_with_valid_tags():
         information_items={"value": [], "state": "Complete"},
         post_type="OTHER_POST",
         summary={"value": "测试摘要", "state": "Complete"},
-        tags=["标签1", "标签2"]
+        tags=["标签1", "标签2"],
     )
-    
+
     # 验证值保持不变
     assert partial_information.tags == ["标签1", "标签2"]

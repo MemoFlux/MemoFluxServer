@@ -1,9 +1,8 @@
 from typing import List, Set
 
+
 def greedy_text_splitter(
-    text: str,
-    max_length: int,
-    punctuation: Set[str] = set()
+    text: str, max_length: int, punctuation: Set[str] = set()
 ) -> List[str]:
     """
     使用贪婪算法进行文本分割。
@@ -26,10 +25,10 @@ def greedy_text_splitter(
 
     if not text:
         return []
-    
+
     # 先去除文本首尾的空白字符
     text = text.strip()
-    
+
     if len(text) <= max_length:
         # 对于短文本，移除末尾的标点符号
         if text and text[-1] in punctuation:
@@ -38,12 +37,12 @@ def greedy_text_splitter(
 
     segments = []
     current_pos = 0
-    
+
     while current_pos < len(text):
         # 确定下一次搜索的窗口末尾位置
         # min()确保我们不会超出文本的总长度
         end_pos = min(current_pos + max_length, len(text))
-        
+
         # 如果剩余文本不再需要分割，直接添加并结束
         if end_pos == len(text):
             segment = text[current_pos:]
@@ -64,7 +63,7 @@ def greedy_text_splitter(
                 split_pos = i  # 分割点在标点符号之后
                 split_char_pos = i - 1  # 标点符号的位置
                 break
-        
+
         # 根据是否找到标点来决定如何分割
         if split_pos != -1:
             # 情况一：找到了标点，就在标点处分割（但不包含标点符号）
@@ -74,7 +73,7 @@ def greedy_text_splitter(
             # 情况二：未找到标点，执行硬分割
             segment = text[current_pos:end_pos]
             current_pos = end_pos
-            
+
         # 使用strip()去除分段前后可能存在的空白字符
         segment = segment.strip()
         if segment:  # 只添加非空段落

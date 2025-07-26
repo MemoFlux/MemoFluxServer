@@ -17,113 +17,128 @@
 输入内容 -> 信息分析 -> 结构化提取 -> Information 对象
 """
 
-from typing import Union, AsyncGenerator, List, Any
+from typing import Union, AsyncGenerator, List
 from baml_py import Image
 
 from src.common.streaming_output.base import LLMContentProcessor
 from src.baml_client.async_client import b
 from src.baml_client.types import Information as BamlInformation
-from src.baml_client.stream_types import StreamingInformation as BamlStreamingInformation
+from src.baml_client.stream_types import (
+    StreamingInformation as BamlStreamingInformation,
+)
 from .schemas import Information
 
 
 class InformationProcessor(LLMContentProcessor[Information, BamlStreamingInformation]):
     """
     信息管理处理器
-    
+
     继承自 LLMContentProcessor，实现了信息内容的分析和结构化处理。
     支持从文本和图像中提取信息结构，生成结构化的信息内容。
     """
-    
+
     def __init__(self, logger_name: str = "InformationProcessor"):
         """
         初始化信息管理处理器
-        
+
         Args:
             logger_name: 日志器名称
         """
         super().__init__(logger_name)
-    
-    async def _call_llm(self, content: Union[str, Image], tags: List[str] = [], **kwargs) -> BamlInformation:
+
+    async def _call_llm(
+        self, content: Union[str, Image], tags: List[str] = [], **kwargs
+    ) -> BamlInformation:
         """
         调用信息结构化的 BAML 函数
-        
+
         Args:
             content: 输入内容（文本或图像）
             tags: 标签列表
             **kwargs: 额外参数
-            
+
         Returns:
             BamlInformation: BAML 生成的信息对象
         """
         self.logger.info("调用 LLM 进行信息分析")
-        
+
         # 调用 BAML 的 InformationStruct 函数
         result = await b.InformationStruct(input=content, tag=tags)
-        
+
         return result
-    
-    async def _call_llm_stream(self, content: Union[str, Image], tags: List[str] = [], **kwargs) -> AsyncGenerator[BamlStreamingInformation, None]:
+
+    async def _call_llm_stream(
+        self, content: Union[str, Image], tags: List[str] = [], **kwargs
+    ) -> AsyncGenerator[BamlStreamingInformation, None]:
         """
         调用信息流式结构化的 BAML 函数
-        
+
         Args:
             content: 输入内容（文本或图像）
             tags: 标签列表
             **kwargs: 额外参数
-            
+
         Yields:
             PartialStreamingInformation: 流式信息分析结果
         """
         self.logger.info("开始流式信息分析")
-        
+
         # 调用 BAML 的 InformationStructStream 函数
         stream = b.stream.InformationStructStream(input=content, tag=tags)
         chunk_count = 0
         async for partial in stream:
             chunk_count += 1
-            
+
             # 直接修复 None 值，简单有效
-            if hasattr(partial, 'tags') and partial.tags is None:
+            if hasattr(partial, "tags") and partial.tags is None:
                 partial.tags = []
-            
+
             # 处理 information_items 中的 None 字段
-            if hasattr(partial, 'information_items') and partial.information_items is not None:
+            if (
+                hasattr(partial, "information_items")
+                and partial.information_items is not None
+            ):
                 # 检查是否有 value 属性（流式状态包装）
                 items_to_check = None
-                if hasattr(partial.information_items, 'value'):
+                if hasattr(partial.information_items, "value"):
                     items_to_check = partial.information_items.value
                 elif isinstance(partial.information_items, list):
                     items_to_check = partial.information_items
-                
+
                 if items_to_check:
                     for i, item in enumerate(items_to_check):
                         if item is not None:
                             # 修复 header 字段
-                            if hasattr(item, 'header') and item.header is None:
+                            if hasattr(item, "header") and item.header is None:
                                 item.header = ""
-                            
+
                             # 修复 content 字段
-                            if hasattr(item, 'content') and item.content is None:
+                            if hasattr(item, "content") and item.content is None:
                                 item.content = ""
-            
+
             yield partial
-    
-    def _convert_to_schema(self, baml_result: BamlInformation, original_content: str, tags: List[str] = [], **kwargs) -> Information:
+
+    def _convert_to_schema(
+        self,
+        baml_result: BamlInformation,
+        original_content: str,
+        tags: List[str] = [],
+        **kwargs,
+    ) -> Information:
         """
         将 BAML 结果转换为 Information Schema
-        
+
         Args:
             baml_result: BAML 返回的信息分析结果
             original_content: 原始输入内容的字符串表示
             tags: 标签列表
             **kwargs: 额外参数
-            
+
         Returns:
             Information: 转换后的信息对象
         """
         self.logger.info("转换 BAML 结果为 Information Schema")
-        
+
         # 创建 Information 对象
         information = Information(
             title=baml_result.title,
@@ -131,46 +146,52 @@ class InformationProcessor(LLMContentProcessor[Information, BamlStreamingInforma
             post_type=baml_result.post_type,
             summary=baml_result.summary,
             tags=baml_result.tags,
-            category=original_content[:50] if len(original_content) <= 50 else original_content[:47] + "..."  # 使用前50个字符作为分类
+            category=original_content[:50]
+            if len(original_content) <= 50
+            else original_content[:47] + "...",  # 使用前50个字符作为分类
         )
-        
+
         return information
-    
-    def _validate_input(self, content: Union[str, Image], tags: List[str] = [], **kwargs) -> bool:
+
+    def _validate_input(
+        self, content: Union[str, Image], tags: List[str] = [], **kwargs
+    ) -> bool:
         """
         重写输入验证逻辑
-        
+
         对于信息处理，我们要求文本长度至少为5个字符。
-        
+
         Args:
             content: 输入内容
             tags: 标签列表
             **kwargs: 额外参数
-            
+
         Returns:
             bool: 验证是否通过
         """
         if isinstance(content, str):
             return len(content.strip()) >= 5
         return content is not None
-    
-    def _preprocess_content(self, content: Union[str, Image], tags: List[str] = [], **kwargs) -> Union[str, Image]:
+
+    def _preprocess_content(
+        self, content: Union[str, Image], tags: List[str] = [], **kwargs
+    ) -> Union[str, Image]:
         """
         重写内容预处理逻辑
-        
+
         对文本进行基本的清理，去除多余的空白字符。
-        
+
         Args:
             content: 原始输入内容
             tags: 标签列表
             **kwargs: 额外参数
-            
+
         Returns:
             Union[str, Image]: 预处理后的内容
         """
         if isinstance(content, str):
             # 清理多余的空白字符
-            cleaned = ' '.join(content.split())
+            cleaned = " ".join(content.split())
             return cleaned
         return content
 

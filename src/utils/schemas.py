@@ -35,7 +35,6 @@ class VectorSearchResult(BaseModel):
     score: float
     payload: Optional[Dict[str, Any]] = None
 
-
     @classmethod
     def from_scored_point(cls, scored_point: rest.ScoredPoint) -> "VectorSearchResult":
         return cls(

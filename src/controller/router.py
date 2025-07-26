@@ -19,28 +19,24 @@ from src.auth.router import get_current_user
 from src.utils import vector_db
 from src.utils.text_splitter import greedy_text_splitter
 
-router = APIRouter(
-    prefix="/aigen",
-    tags=["AI"]
-)
+router = APIRouter(prefix="/aigen", tags=["AI"])
 
 
 class AIReq(BaseModel):
     tags: List[str] = Field(default=[])
-    content: str 
+    content: str
     isimage: int
 
 
-
 class AIRes(BaseModel):
-    most_possbile_category:str
+    most_possbile_category: str
     knowledge: KnowledgeRes
     information: InformationRes
     schedule: Schedule
 
 
-@router.post("/",response_model=AIRes)
-async  def create_ai_req(req: AIReq, _: str = Depends(get_current_user)) -> AIRes:
+@router.post("/", response_model=AIRes)
+async def create_ai_req(req: AIReq, _: str = Depends(get_current_user)) -> AIRes:
     """
     创建AI请求
     - content: 文本内容
@@ -51,40 +47,40 @@ async  def create_ai_req(req: AIReq, _: str = Depends(get_current_user)) -> AIRe
     # 假设返回的结果是knowledge, information, schedule
     rag_client = await vector_db.VectorDB.get_instance()
     logger.debug("rag_client created")
-    if (req.isimage == 1):
-        image_url =  await base64_to_URL(req.content)
+    if req.isimage == 1:
+        image_url = await base64_to_URL(req.content)
         if image_url is None or image_url == "":
             raise HTTPException(status_code=400, detail="Image upload failed")
 
         logger.debug("Image URL: %s", image_url)
         # image is the baml_py Image object
-        image = Image.from_url(image_url) 
-            
+        image = Image.from_url(image_url)
+
         # This is need the image url in Network
         result = await rag_client.search(image_url)
         logger.debug("start rag")
         for i in result:
             assert i.payload is not None
-            req.tags.append(i.payload.get("text")) # type: ignore
+            req.tags.append(i.payload.get("text"))  # type: ignore
         logger.debug("req.tags: %s", req.tags)
         logger.debug("start llm")
         most_possbile_category = b.SortScene(image)
-        knowledge = knowledge_core.get_knowledge_from_content(image,req.tags)
-        information = information_core.get_information_from_content(image,req.tags)
+        knowledge = knowledge_core.get_knowledge_from_content(image, req.tags)
+        information = information_core.get_information_from_content(image, req.tags)
         schedule = schedule_core.gen_schedule_from_content(image)
     else:
-        spilitted_str = greedy_text_splitter(req.content,max_length=30)
+        spilitted_str = greedy_text_splitter(req.content, max_length=30)
         logger.debug("start rag")
-            
+
         sem = asyncio.Semaphore(100)
-            
+
         async def concurrent_search(text: str):
             async with sem:
                 return await rag_client.search(text)
 
         tasks = [concurrent_search(s) for s in spilitted_str]
         results = await asyncio.gather(*tasks)
-            
+
         rag_dict = {}
         for original_str, result_list in zip(spilitted_str, results):
             # 检查结果列表是否为空
@@ -92,21 +88,22 @@ async  def create_ai_req(req: AIReq, _: str = Depends(get_current_user)) -> AIRe
                 continue
             assert result_list[0].payload is not None
             rag_dict[original_str] = result_list[0].payload.get("text")
-                
+
         logger.debug(f"rag_dict: {rag_dict}")
         rag_str = json.dumps(rag_dict, ensure_ascii=False)
         logger.debug("start llm")
         most_possbile_category = b.SortScene(req.content)
-        knowledge = knowledge_core.get_knowledge_from_content(rag_str,req.tags)
-        information = information_core.get_information_from_content(rag_str,req.tags)
+        knowledge = knowledge_core.get_knowledge_from_content(rag_str, req.tags)
+        information = information_core.get_information_from_content(rag_str, req.tags)
         schedule = schedule_core.gen_schedule_from_content(rag_str)
 
-    knowledge_result, information_result, schedule_result = await asyncio.gather(knowledge, information, schedule)
+    knowledge_result, information_result, schedule_result = await asyncio.gather(
+        knowledge, information, schedule
+    )
 
     return AIRes(
-            most_possbile_category=most_possbile_category,
-            knowledge=knowledge_result,
-            information=information_result,
-            schedule=schedule_result
+        most_possbile_category=most_possbile_category,
+        knowledge=knowledge_result,
+        information=information_result,
+        schedule=schedule_result,
     )
-    

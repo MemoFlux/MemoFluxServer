@@ -16,6 +16,7 @@ from typing import List, Optional, Literal, Generic, TypeVar
 
 class DocumentSection(BaseModel):
     """文档章节数据模型"""
+
     title: str
     content: str
     level: int = Field(default=1, description="章节层级，1为顶级章节")
@@ -25,9 +26,10 @@ class DocumentSection(BaseModel):
 class Document(BaseModel):
     """
     文档处理结果的最终数据模型
-    
+
     这是经过完整处理和验证后，应用逻辑中使用的对象。
     """
+
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     title: str
     summary: str
@@ -39,19 +41,21 @@ class Document(BaseModel):
 
 
 # 以下是模拟的流式类型（实际使用中应由 BAML 自动生成）
-T_co = TypeVar('T_co', covariant=True)
+T_co = TypeVar("T_co", covariant=True)
 
 
 class StreamState(BaseModel, Generic[T_co]):
     """
     包裹流式字段的状态机，用于模拟 BAML 的流式状态
     """
+
     value: T_co
     state: Literal["Pending", "Incomplete", "Complete", "Error"]
 
 
 class PartialDocumentSection(BaseModel):
     """流式处理中的部分章节类型"""
+
     title: Optional[str] = None
     content: Optional[str] = None
     level: Optional[int] = None
@@ -61,13 +65,16 @@ class PartialDocumentSection(BaseModel):
 class PartialStreamingDocument(BaseModel):
     """
     流式文档处理的部分类型
-    
+
     这是在流式处理过程中，每个数据块的实际类型。
     在实际项目中，这个类型应该由 BAML 根据 .baml 文件自动生成。
     """
+
     title: Optional[StreamState[Optional[str]]] = None
     summary: Optional[StreamState[Optional[str]]] = None
     category: Optional[str] = None  # 假设使用 @stream.done，所以没有 StreamState
-    sections: Optional[StreamState[Optional[List[Optional[PartialDocumentSection]]]]] = None
+    sections: Optional[
+        StreamState[Optional[List[Optional[PartialDocumentSection]]]]
+    ] = None
     language: Optional[str] = None
     word_count: Optional[int] = None
