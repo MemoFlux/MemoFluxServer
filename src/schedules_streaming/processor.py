@@ -78,7 +78,8 @@ class ScheduleProcessor(LLMContentProcessor[Schedule, PartialStreamingSchedule])
         # 调用 BAML 的 ScheduleManagerStream 函数
         stream = b.stream.ScheduleManagerStream(content=content)
         async for partial in stream:
-            yield partial
+            # 将 BAML 流式结果转换为 PartialStreamingSchedule
+            yield PartialStreamingSchedule(**partial.model_dump())
     
     def _convert_to_schema(self, baml_result: BamlSchedule, original_content: str, **kwargs) -> Schedule:
         """
