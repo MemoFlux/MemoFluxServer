@@ -3,7 +3,7 @@ class InfromationItem{
         信息项的标题
     "#)
     content string @description(#"
-        信息项的具体内容
+        信息项的具体内容，你有义务返回一个完整语义的内容，不能出现错字或语法错误
     "#)
 }
 
@@ -48,6 +48,7 @@ function InformationStruct(input:string | image,tag: string[]) -> Information {
 
         {{ input }}
         这是已经存在的tag，{{ tag }}。你需要尽量使用其中已存在的tag，在没有符合的tag时可以提供新的
+        你有义务尽可能的减少新tag的创建。
         请使用中文回复
         {{ctx.output_format}}
     "#
