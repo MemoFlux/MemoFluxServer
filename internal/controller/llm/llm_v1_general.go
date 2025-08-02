@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/gogf/gf/v2/frame/g"
 	"github.com/sashabaranov/go-openai"
 	"log"
 	"strings"
@@ -20,8 +21,20 @@ func (c *ControllerV1) General(ctx context.Context, req *v1.GeneralReq) (res *v1
 
 	var wg sync.WaitGroup
 	//New LLM Client
-	client := service.NewLLMClient("ms-a63a2622-76d8-41a0-8d72-8b7d715ab4ed", "https://api-inference.modelscope.cn/v1/")
-
+	apikey, err := g.Cfg().Get(ctx, "llm.apikey")
+	if err != nil {
+		return nil, gerror.NewCode(gcode.CodeInvalidParameter, "LLM API Key 未配置: "+err.Error())
+	}
+	baseurl, err := g.Cfg().Get(ctx, "llm.baseurl")
+	if err != nil {
+		return nil, gerror.NewCode(gcode.CodeInvalidParameter, "Base Url 未配置: "+err.Error())
+	}
+	modelName, err := g.Cfg().Get(ctx, "llm.model")
+	if err != nil {
+		return nil, gerror.NewCode(gcode.CodeInvalidParameter, "Model Name 未配置: "+err.Error())
+	}
+	client := service.NewLLMClient(apikey.String(), baseurl.String())
+	g.Log().Debugf(ctx, "LLM Model: %v", modelName.String())
 	//Go struct to JSON
 	schedule_str, err := service.GenerateStructSchema(v1.Schedule{})
 	knowledge_str, err := service.GenerateStructSchema(v1.Knowledge{})
@@ -32,14 +45,16 @@ func (c *ControllerV1) General(ctx context.Context, req *v1.GeneralReq) (res *v1
 	sort_chan := make(chan string)
 
 	wg.Add(3)
-	go Schedule(client, req.Content, schedule_str, &wg, schedule_chan)
-	go Knowledge(client, req.Content, knowledge_str, &wg, knowledge_chan)
-	go Sort(client, req.Content, &wg, sort_chan)
+	go Schedule(client, modelName.String(), req.Content, schedule_str, &wg, schedule_chan)
+	go Knowledge(client, modelName.String(), req.Content, knowledge_str, &wg, knowledge_chan)
+	go Sort(client, modelName.String(), req.Content, &wg, sort_chan)
 
 	schedule_result := <-schedule_chan
 	knowledge_result := <-knowledge_chan
 	sort_result := <-sort_chan
-
+	g.Log().Debugf(ctx, "清洗结果 Knowledge: %v", knowledge_result)
+	g.Log().Debugf(ctx, "清洗结果 Schedule: %v", schedule_result)
+	g.Log().Debugf(ctx, "清洗结果 Sort: %v", sort_result)
 	if err != nil {
 		log.Fatalf("LLM 生成失败: %v", err)
 	}
@@ -50,11 +65,13 @@ func (c *ControllerV1) General(ctx context.Context, req *v1.GeneralReq) (res *v1
 	if err != nil {
 		// 如果 JSON 格式错误，或者类型不匹配，这里会捕获到错误
 		log.Fatalf("日程JSON 解析失败: %v", err)
+		g.Log().Debugf(ctx, "Schedule: %v", schedule_result)
 	}
 	err = json.Unmarshal([]byte(knowledge_result), &knowledge_struct)
 	if err != nil {
 		// 如果 JSON 格式错误，或者类型不匹配，这里会捕获到错误
 		log.Fatalf("知识JSON 解析失败: %v", err)
+		g.Log().Debugf(ctx, "Knowledge: %v", schedule_result)
 	}
 
 	return &v1.GeneralRes{
@@ -64,12 +81,12 @@ func (c *ControllerV1) General(ctx context.Context, req *v1.GeneralReq) (res *v1
 	}, nil
 }
 
-func Schedule(client *openai.Client, content string, schema string, wg *sync.WaitGroup, resultchan chan string) {
+func Schedule(client *openai.Client, modelName string, content string, schema string, wg *sync.WaitGroup, resultchan chan string) {
 	defer wg.Done()
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: "Qwen/Qwen2.5-VL-72B-Instruct",
+			Model: modelName,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleSystem,
@@ -89,7 +106,7 @@ func Schedule(client *openai.Client, content string, schema string, wg *sync.Wai
 				},
 				{
 					Role:    openai.ChatMessageRoleSystem,
-					Content: "Answer in JSON using this schema",
+					Content: "输出结果严格遵从以下 JSON Schema",
 				},
 				{
 					Role:    openai.ChatMessageRoleSystem,
@@ -111,15 +128,17 @@ func Schedule(client *openai.Client, content string, schema string, wg *sync.Wai
 	s = strings.TrimPrefix(s, "```json")
 	// 移除后缀
 	s = strings.TrimSuffix(s, "```")
+	s = strings.TrimPrefix(s, "[")
+	s = strings.TrimSuffix(s, "]")
 	resultchan <- s
 }
 
-func Knowledge(client *openai.Client, content string, schema string, wg *sync.WaitGroup, resultchan chan string) {
+func Knowledge(client *openai.Client, modelName string, content string, schema string, wg *sync.WaitGroup, resultchan chan string) {
 	defer wg.Done()
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: "Qwen/Qwen3-235B-A22B-Instruct-2507",
+			Model: modelName,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleSystem,
@@ -132,14 +151,14 @@ func Knowledge(client *openai.Client, content string, schema string, wg *sync.Wa
 							Type: openai.ChatMessagePartTypeImageURL,
 							ImageURL: &openai.ChatMessageImageURL{
 								// 确保 MIME 类型正确，例如 image/jpeg 或 image/png
-								URL: "data:image/jpeg;base64," + content,
+								URL: "data:image/png;base64," + content,
 							},
 						},
 					},
 				},
 				{
 					Role:    openai.ChatMessageRoleSystem,
-					Content: "Answer in JSON using this schema",
+					Content: "输出结果严格遵从以下 JSON Schema",
 				},
 				{
 					Role:    openai.ChatMessageRoleSystem,
@@ -157,15 +176,17 @@ func Knowledge(client *openai.Client, content string, schema string, wg *sync.Wa
 	s = strings.TrimPrefix(s, "```json")
 	// 移除后缀
 	s = strings.TrimSuffix(s, "```")
+	s = strings.TrimPrefix(s, "[")
+	s = strings.TrimSuffix(s, "]")
 	resultchan <- s
 }
 
-func Sort(client *openai.Client, content string, wg *sync.WaitGroup, resultchan chan string) {
+func Sort(client *openai.Client, modelName string, content string, wg *sync.WaitGroup, resultchan chan string) {
 	defer wg.Done()
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: "Qwen/Qwen3-235B-A22B-Instruct-2507",
+			Model: modelName,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleSystem,
@@ -178,7 +199,7 @@ func Sort(client *openai.Client, content string, wg *sync.WaitGroup, resultchan 
 							Type: openai.ChatMessagePartTypeImageURL,
 							ImageURL: &openai.ChatMessageImageURL{
 								// 确保 MIME 类型正确，例如 image/jpeg 或 image/png
-								URL: "data:image/jpeg;base64," + content,
+								URL: "data:image/png;base64," + content,
 							},
 						},
 					},
