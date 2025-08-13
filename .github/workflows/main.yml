@@ -20,6 +20,6 @@ jobs:
 
       - name: Trigger Webhook for Deployment
         run: |
-          curl -X POST https://api.tokya.online/continuedeploy/webhook/goback \
+          curl -X POST https://api.tokya.online/dev/webhook/goback \
             -H "Content-Type: application/json" \
             -d '{"ref": "${{ github.ref }}", "repository": "${{ github.repository }}"}'
