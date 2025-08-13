@@ -1,0 +1,25 @@
+name: Deploy on Main
+
+on:
+  push:
+    branches:
+      - main  # 当 main 分支收到推送时触发
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Print the ref value (for debugging)
+        run: |
+          echo "The ref is: $GITHUB_REF"
+
+      - name: Trigger Webhook for Deployment
+        run: |
+          curl -X POST https://api.tokya.online/continuedeploy/webhook/goback \
+            -H "Content-Type: application/json" \
+            -d '{"ref": "${{ github.ref }}", "repository": "${{ github.repository }}"}'
