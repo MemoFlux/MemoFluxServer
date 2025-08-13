@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/sashabaranov/go-openai"
-	"log"
 	"strings"
 	"sync"
 
@@ -37,7 +36,13 @@ func (c *ControllerV1) General(ctx context.Context, req *v1.GeneralReq) (res *v1
 	g.Log().Debugf(ctx, "LLM Model: %v", modelName.String())
 	//Go struct to JSON
 	schedule_str, err := service.GenerateStructSchema(v1.Schedule{})
+	if err != nil {
+		g.Log().Error(ctx, "生成 Schedule Schema 失败: %v", err)
+	}
 	knowledge_str, err := service.GenerateStructSchema(v1.Knowledge{})
+	if err != nil {
+		g.Log().Error(ctx, "生成 Knowledge Schema 失败: %v", err)
+	}
 
 	//Make chan
 	schedule_chan := make(chan string)
@@ -56,21 +61,19 @@ func (c *ControllerV1) General(ctx context.Context, req *v1.GeneralReq) (res *v1
 	g.Log().Debugf(ctx, "清洗结果 Schedule: %v", schedule_result)
 	g.Log().Debugf(ctx, "清洗结果 Sort: %v", sort_result)
 	if err != nil {
-		log.Fatalf("LLM 生成失败: %v", err)
+		g.Log().Error(ctx, "LLM 生成失败: %v", err)
 	}
 	var schedule_struct v1.Schedule
 	var knowledge_struct v1.Knowledge
 
 	err = json.Unmarshal([]byte(schedule_result), &schedule_struct)
 	if err != nil {
-		// 如果 JSON 格式错误，或者类型不匹配，这里会捕获到错误
-		log.Fatalf("日程JSON 解析失败: %v", err)
+		g.Log().Error(ctx, "日程JSON 解析失败: %v", err)
 		g.Log().Debugf(ctx, "Schedule: %v", schedule_result)
 	}
 	err = json.Unmarshal([]byte(knowledge_result), &knowledge_struct)
 	if err != nil {
-		// 如果 JSON 格式错误，或者类型不匹配，这里会捕获到错误
-		log.Fatalf("知识JSON 解析失败: %v", err)
+		g.Log().Error(ctx, "知识JSON 解析失败: %v", err)
 		g.Log().Debugf(ctx, "Knowledge: %v", schedule_result)
 	}
 
@@ -98,7 +101,6 @@ func Schedule(client *openai.Client, modelName string, content string, schema st
 						{
 							Type: openai.ChatMessagePartTypeImageURL,
 							ImageURL: &openai.ChatMessageImageURL{
-								// 确保 MIME 类型正确，例如 image/jpeg 或 image/png
 								URL: "data:image/png;base64," + content,
 							},
 						},
@@ -122,11 +124,14 @@ func Schedule(client *openai.Client, modelName string, content string, schema st
 	if err != nil {
 		fmt.Printf("请求出错: %v\n", err)
 		resultchan <- fmt.Sprintf("请求出错: %v", err)
+		return
 	}
-	fmt.Println("🧠 Moonshot 回复：", resp.Choices[0].Message.Content)
+	if len(resp.Choices) == 0 {
+		resultchan <- "无有效回复"
+		return
+	}
 	s := resp.Choices[0].Message.Content
 	s = strings.TrimPrefix(s, "```json")
-	// 移除后缀
 	s = strings.TrimSuffix(s, "```")
 	s = strings.TrimPrefix(s, "[")
 	s = strings.TrimSuffix(s, "]")
@@ -148,11 +153,8 @@ func Knowledge(client *openai.Client, modelName string, content string, schema s
 					Role: openai.ChatMessageRoleUser,
 					MultiContent: []openai.ChatMessagePart{
 						{
-							Type: openai.ChatMessagePartTypeImageURL,
-							ImageURL: &openai.ChatMessageImageURL{
-								// 确保 MIME 类型正确，例如 image/jpeg 或 image/png
-								URL: "data:image/png;base64," + content,
-							},
+							Type:     openai.ChatMessagePartTypeImageURL,
+							ImageURL: &openai.ChatMessageImageURL{URL: "data:image/png;base64," + content},
 						},
 					},
 				},
@@ -169,12 +171,15 @@ func Knowledge(client *openai.Client, modelName string, content string, schema s
 	)
 	if err != nil {
 		fmt.Printf("请求出错: %v\n", err)
-		resultchan <- fmt.Sprintf("<UNK>: %v", err)
+		resultchan <- fmt.Sprintf("请求出错: %v", err)
+		return
 	}
-	fmt.Println("🧠 Moonshot 回复：", resp.Choices[0].Message.Content)
+	if len(resp.Choices) == 0 {
+		resultchan <- "无有效回复"
+		return
+	}
 	s := resp.Choices[0].Message.Content
 	s = strings.TrimPrefix(s, "```json")
-	// 移除后缀
 	s = strings.TrimSuffix(s, "```")
 	s = strings.TrimPrefix(s, "[")
 	s = strings.TrimSuffix(s, "]")
@@ -196,11 +201,8 @@ func Sort(client *openai.Client, modelName string, content string, wg *sync.Wait
 					Role: openai.ChatMessageRoleUser,
 					MultiContent: []openai.ChatMessagePart{
 						{
-							Type: openai.ChatMessagePartTypeImageURL,
-							ImageURL: &openai.ChatMessageImageURL{
-								// 确保 MIME 类型正确，例如 image/jpeg 或 image/png
-								URL: "data:image/png;base64," + content,
-							},
+							Type:     openai.ChatMessagePartTypeImageURL,
+							ImageURL: &openai.ChatMessageImageURL{URL: "data:image/png;base64," + content},
 						},
 					},
 				},
@@ -209,12 +211,15 @@ func Sort(client *openai.Client, modelName string, content string, wg *sync.Wait
 	)
 	if err != nil {
 		fmt.Printf("请求出错: %v\n", err)
-		resultchan <- fmt.Sprintf("<UNK>: %v", err)
+		resultchan <- fmt.Sprintf("请求出错: %v", err)
+		return
 	}
-	fmt.Println("🧠 Moonshot 回复：", resp.Choices[0].Message.Content)
+	if len(resp.Choices) == 0 {
+		resultchan <- "无有效回复"
+		return
+	}
 	s := resp.Choices[0].Message.Content
 	s = strings.TrimPrefix(s, "```json")
-	// 移除后缀
 	s = strings.TrimSuffix(s, "```")
 	resultchan <- s
 }
