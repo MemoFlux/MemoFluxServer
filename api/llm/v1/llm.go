@@ -31,6 +31,7 @@ type Knowledge struct {
 	Title          string          `json:"title"           dc:"知识的标题"`
 	KnowledgeItems []KnowledgeItem `json:"knowledgeItems" dc:"知识项列表"`
 	RelatedItems   []string        `json:"relatedItems"   dc:"可能相关的知识名"`
+	Summary        string          `json:"summary"        dc:"知识的摘要"`
 	Tags           []string        `json:"tags"            dc:"对这个知识的标签，该标签不能少于1个，不超过3个"`
 }
 
