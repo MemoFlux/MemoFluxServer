@@ -195,7 +195,7 @@ func Sort(client *openai.Client, modelName string, content string, wg *sync.Wait
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleSystem,
-					Content: "将下列内容进行场景分类，仅输出分类结果。你只能在KNOWLEDGE,SCHEDULE,OTHER这三个分类中选择一个。",
+					Content: "将下列内容进行场景分类，仅输出分类结果。你只能在INFORMATION,SCHEDULE,OTHER这三个分类中选择一个。",
 				},
 				{
 					Role: openai.ChatMessageRoleUser,
