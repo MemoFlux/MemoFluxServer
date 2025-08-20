@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/gogf/gf/v2/frame/g"
-	"github.com/sashabaranov/go-openai"
 	"strings"
 	"sync"
+
+	"github.com/gogf/gf/v2/frame/g"
+	"github.com/sashabaranov/go-openai"
 
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -50,16 +51,13 @@ func (c *ControllerV1) General(ctx context.Context, req *v1.GeneralReq) (res *v1
 	sort_chan := make(chan string)
 
 	wg.Add(3)
-	go Schedule(client, modelName.String(), req.Content, schedule_str, &wg, schedule_chan)
-	go Knowledge(client, modelName.String(), req.Content, knowledge_str, &wg, knowledge_chan)
-	go Sort(client, modelName.String(), req.Content, &wg, sort_chan)
+	go Schedule(client, modelName.String(), req, schedule_str, &wg, schedule_chan)
+	go Knowledge(client, modelName.String(), req, knowledge_str, &wg, knowledge_chan)
+	go Sort(client, modelName.String(), req, &wg, sort_chan)
 
 	schedule_result := <-schedule_chan
 	knowledge_result := <-knowledge_chan
 	sort_result := <-sort_chan
-	g.Log().Debugf(ctx, "清洗结果 Knowledge: %v", knowledge_result)
-	g.Log().Debugf(ctx, "清洗结果 Schedule: %v", schedule_result)
-	g.Log().Debugf(ctx, "清洗结果 Sort: %v", sort_result)
 	if err != nil {
 		g.Log().Error(ctx, "LLM 生成失败: %v", err)
 	}
@@ -84,7 +82,7 @@ func (c *ControllerV1) General(ctx context.Context, req *v1.GeneralReq) (res *v1
 	}, nil
 }
 
-func Schedule(client *openai.Client, modelName string, content string, schema string, wg *sync.WaitGroup, resultchan chan string) {
+func Schedule(client *openai.Client, modelName string, req *v1.GeneralReq, schema string, wg *sync.WaitGroup, resultchan chan string) {
 	defer wg.Done()
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
@@ -93,7 +91,7 @@ func Schedule(client *openai.Client, modelName string, content string, schema st
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleSystem,
-					Content: "你是一个日程管理专家，请根据用户输入的文本，生成一个日程安排。始终使用和用户输入的文本相同的语言进行回答。",
+					Content: "你是一个日程管理专家，请根据用户输入的文本，生成一个日程安排。请使用中文回复。",
 				},
 				{
 					Role: openai.ChatMessageRoleUser,
@@ -101,7 +99,7 @@ func Schedule(client *openai.Client, modelName string, content string, schema st
 						{
 							Type: openai.ChatMessagePartTypeImageURL,
 							ImageURL: &openai.ChatMessageImageURL{
-								URL: "data:image/png;base64," + content,
+								URL: "data:image/png;base64," + req.Content,
 							},
 						},
 					},
@@ -131,6 +129,9 @@ func Schedule(client *openai.Client, modelName string, content string, schema st
 		return
 	}
 	s := resp.Choices[0].Message.Content
+	g.Log().Infof(context.Background(), "Schedule-LLMPromptToken: %d", resp.Usage.PromptTokens)
+	g.Log().Infof(context.Background(), "Schedule-LLMCompletionToken: %d", resp.Usage.CompletionTokens)
+	g.Log().Infof(context.Background(), "Schedule-LLMTotalToken: %d", resp.Usage.TotalTokens)
 	s = strings.TrimPrefix(s, "```json")
 	s = strings.TrimSuffix(s, "```")
 	s = strings.TrimPrefix(s, "[")
@@ -138,7 +139,7 @@ func Schedule(client *openai.Client, modelName string, content string, schema st
 	resultchan <- s
 }
 
-func Knowledge(client *openai.Client, modelName string, content string, schema string, wg *sync.WaitGroup, resultchan chan string) {
+func Knowledge(client *openai.Client, modelName string, req *v1.GeneralReq, schema string, wg *sync.WaitGroup, resultchan chan string) {
 	defer wg.Done()
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
@@ -154,7 +155,7 @@ func Knowledge(client *openai.Client, modelName string, content string, schema s
 					MultiContent: []openai.ChatMessagePart{
 						{
 							Type:     openai.ChatMessagePartTypeImageURL,
-							ImageURL: &openai.ChatMessageImageURL{URL: "data:image/png;base64," + content},
+							ImageURL: &openai.ChatMessageImageURL{URL: "data:image/png;base64," + req.Content},
 						},
 					},
 				},
@@ -179,6 +180,9 @@ func Knowledge(client *openai.Client, modelName string, content string, schema s
 		return
 	}
 	s := resp.Choices[0].Message.Content
+	g.Log().Infof(context.Background(), "Knowledge-LLMPromptToken: %d", resp.Usage.PromptTokens)
+	g.Log().Infof(context.Background(), "Knowledge-LLMCompletionToken: %d", resp.Usage.CompletionTokens)
+	g.Log().Infof(context.Background(), "Knowledge-LLMTotalToken: %d", resp.Usage.TotalTokens)
 	s = strings.TrimPrefix(s, "```json")
 	s = strings.TrimSuffix(s, "```")
 	s = strings.TrimPrefix(s, "[")
@@ -186,7 +190,7 @@ func Knowledge(client *openai.Client, modelName string, content string, schema s
 	resultchan <- s
 }
 
-func Sort(client *openai.Client, modelName string, content string, wg *sync.WaitGroup, resultchan chan string) {
+func Sort(client *openai.Client, modelName string, req *v1.GeneralReq, wg *sync.WaitGroup, resultchan chan string) {
 	defer wg.Done()
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
@@ -202,7 +206,7 @@ func Sort(client *openai.Client, modelName string, content string, wg *sync.Wait
 					MultiContent: []openai.ChatMessagePart{
 						{
 							Type:     openai.ChatMessagePartTypeImageURL,
-							ImageURL: &openai.ChatMessageImageURL{URL: "data:image/png;base64," + content},
+							ImageURL: &openai.ChatMessageImageURL{URL: "data:image/png;base64," + req.Content},
 						},
 					},
 				},
@@ -219,16 +223,10 @@ func Sort(client *openai.Client, modelName string, content string, wg *sync.Wait
 		return
 	}
 	s := resp.Choices[0].Message.Content
+	g.Log().Infof(context.Background(), "Sort-LLMPromptToken: %d", resp.Usage.PromptTokens)
+	g.Log().Infof(context.Background(), "Sort-LLMCompletionToken: %d", resp.Usage.CompletionTokens)
+	g.Log().Infof(context.Background(), "Sort-LLMTotalToken: %d", resp.Usage.TotalTokens)
 	s = strings.TrimPrefix(s, "```json")
 	s = strings.TrimSuffix(s, "```")
 	resultchan <- s
-}
-
-func GetStructJson(s interface{}) (string, error) {
-
-	schema, err := service.GenerateStructSchema(s)
-	if err != nil {
-		return "", gerror.NewCode(gcode.CodeInvalidParameter, "生成结构体 JSON 失败: "+err.Error())
-	}
-	return schema, nil
 }
