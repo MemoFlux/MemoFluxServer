@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"MemoFluxServer/internal/controller/llm"
+	"MemoFluxServer/internal/controller/user"
 	"MemoFluxServer/internal/middleware"
 	"context"
 
@@ -29,6 +30,7 @@ var (
 				group.Bind(
 					hello.NewV1(),
 					llm.NewV1(),
+					user.NewV1(),
 				)
 			})
 			s.Run()

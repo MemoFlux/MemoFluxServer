@@ -4,7 +4,7 @@
 gfcli:
   gen:
     dao:
-      - link: "mysql:root:12345678@tcp(127.0.0.1:3306)/test"
+      - link: "pgsql:postgres:postgres@tcp(106.15.105.9:5432)/postgres"
         descriptionTag: true
 
   docker:

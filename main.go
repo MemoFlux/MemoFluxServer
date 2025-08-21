@@ -6,6 +6,8 @@ import (
 	"github.com/gogf/gf/v2/os/gctx"
 
 	"MemoFluxServer/internal/cmd"
+
+	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 )
 
 func main() {
