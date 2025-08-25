@@ -62,9 +62,9 @@ func (c *ControllerV1) SSEGenerate(ctx context.Context, req *v1.SSEGenerateReq) 
 	// 创建一个带缓冲的 channel，用于从所有 goroutine 接收数据块。
 	dataChan := make(chan StreamedChunk, 3)
 
-	knowledgeSchema, err := service.StructToJSONSchema(&v1.Knowledge{})
+	knowledgeSchema, err := service.StructToJSONSchema(&v1.Information{})
 	if err != nil {
-		return nil, fmt.Errorf("生成 Knowledge Schema 失败: %v", err)
+		return nil, fmt.Errorf("生成 Information Schema 失败: %v", err)
 	}
 	scheduleSchema, err := service.StructToJSONSchema(&v1.Schedule{})
 	if err != nil {

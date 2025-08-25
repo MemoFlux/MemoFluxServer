@@ -18,21 +18,21 @@ type Node struct {
 	Relationship RelationShip `json:"relationship"  dc:"用来阐述两个节点之间的关系,只能从PARENT、CHILD两个值中选择"`
 }
 
-// KnowledgeItem 表示一个具体的知识项
-type KnowledgeItem struct {
+// InformationItem 表示一个具体的知识项
+type InformationItem struct {
 	ID      int    `json:"id"      dc:"知识项的唯一标识符"`
 	Header  string `json:"header"  dc:"知识项的标题"`
 	Content string `json:"content" dc:"知识项的具体内容，你有义务返回一个完整语义的内容，不能出现错字或语法错误；如果信息字符长度超过20，请在该字段头部添加一个跟内容相符的emoji"`
 	Node    *Node  `json:"node"    dc:"知识项对应的节点信息"` // 指针表示可以为 null
 }
 
-// Knowledge 表示一个完整的知识结构
-type Knowledge struct {
-	Title          string          `json:"title"           dc:"知识的标题"`
-	KnowledgeItems []KnowledgeItem `json:"knowledgeItems" dc:"知识项列表"`
-	RelatedItems   []string        `json:"relatedItems"   dc:"可能相关的知识名"`
-	Summary        string          `json:"summary"        dc:"知识的摘要"`
-	Tags           []string        `json:"tags"            dc:"对这个知识的标签，该标签不能少于1个，不超过3个"`
+// Information 表示一个完整的知识结构
+type Information struct {
+	Title            string            `json:"title"           dc:"知识的标题"`
+	InformationItems []InformationItem `json:"informationItems" dc:"知识项列表"`
+	RelatedItems     []string          `json:"relatedItems"   dc:"可能相关的知识名"`
+	Summary          string            `json:"summary"        dc:"知识的摘要"`
+	Tags             []string          `json:"tags"            dc:"对这个知识的标签，该标签不能少于1个，不超过3个"`
 }
 
 // Task 表示单个事项
@@ -57,7 +57,7 @@ type Schedule struct {
 
 type GeneralRes struct {
 	g.Meta                 `mime:"application/json" example:"{}"`
-	Most_possible_category string    `json:"mostPossibleCategory" dc:"最可能的分类"`
-	Schedule               Schedule  `json:"schedule" dc:"日程安排"`
-	Knowledge              Knowledge `json:"knowledge" dc:"<UNK>"`
+	Most_possible_category string      `json:"mostPossibleCategory" dc:"最可能的分类"`
+	Schedule               Schedule    `json:"schedule" dc:"日程安排"`
+	Information            Information `json:"information" dc:"<UNK>"`
 }

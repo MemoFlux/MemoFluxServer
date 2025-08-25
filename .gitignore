@@ -9,8 +9,8 @@
 bin/
 **/.DS_Store
 gf
-main
-main.exe
+Routine
+Routine.exe
 output/
 manifest/output/
 temp/

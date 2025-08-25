@@ -9,7 +9,7 @@ import (
 
 func w1(wg *sync.WaitGroup) {
 	defer wg.Done()
-	service.GenerateStructSchema(v1.Knowledge{})
+	service.GenerateStructSchema(v1.Information{})
 }
 func w2(wg *sync.WaitGroup) {
 	defer wg.Done()
@@ -30,7 +30,7 @@ func BenchmarkStructToJsonSync(b *testing.B) {
 func BenchmarkJsonToStructNoSync(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		service.GenerateStructSchema(v1.Knowledge{})
+		service.GenerateStructSchema(v1.Information{})
 		service.GenerateStructSchema(v1.Schedule{})
 	}
 }

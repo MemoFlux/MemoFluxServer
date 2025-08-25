@@ -40,9 +40,9 @@ func (c *ControllerV1) General(ctx context.Context, req *v1.GeneralReq) (res *v1
 	if err != nil {
 		g.Log().Error(ctx, "生成 Schedule Schema 失败: %v", err)
 	}
-	knowledge_str, err := service.GenerateStructSchema(v1.Knowledge{})
+	knowledge_str, err := service.GenerateStructSchema(v1.Information{})
 	if err != nil {
-		g.Log().Error(ctx, "生成 Knowledge Schema 失败: %v", err)
+		g.Log().Error(ctx, "生成 Information Schema 失败: %v", err)
 	}
 
 	//Make chan
@@ -62,7 +62,7 @@ func (c *ControllerV1) General(ctx context.Context, req *v1.GeneralReq) (res *v1
 		g.Log().Error(ctx, "LLM 生成失败: %v", err)
 	}
 	var schedule_struct v1.Schedule
-	var knowledge_struct v1.Knowledge
+	var knowledge_struct v1.Information
 
 	err = json.Unmarshal([]byte(schedule_result), &schedule_struct)
 	if err != nil {
@@ -72,13 +72,13 @@ func (c *ControllerV1) General(ctx context.Context, req *v1.GeneralReq) (res *v1
 	err = json.Unmarshal([]byte(knowledge_result), &knowledge_struct)
 	if err != nil {
 		g.Log().Error(ctx, "知识JSON 解析失败: %v", err)
-		g.Log().Debugf(ctx, "Knowledge: %v", schedule_result)
+		g.Log().Debugf(ctx, "Information: %v", schedule_result)
 	}
 
 	return &v1.GeneralRes{
 		Most_possible_category: sort_result,
 		Schedule:               schedule_struct,
-		Knowledge:              knowledge_struct,
+		Information:            knowledge_struct,
 	}, nil
 }
 
@@ -180,9 +180,9 @@ func Knowledge(client *openai.Client, modelName string, req *v1.GeneralReq, sche
 		return
 	}
 	s := resp.Choices[0].Message.Content
-	g.Log().Infof(context.Background(), "Knowledge-LLMPromptToken: %d", resp.Usage.PromptTokens)
-	g.Log().Infof(context.Background(), "Knowledge-LLMCompletionToken: %d", resp.Usage.CompletionTokens)
-	g.Log().Infof(context.Background(), "Knowledge-LLMTotalToken: %d", resp.Usage.TotalTokens)
+	g.Log().Infof(context.Background(), "Information-LLMPromptToken: %d", resp.Usage.PromptTokens)
+	g.Log().Infof(context.Background(), "Information-LLMCompletionToken: %d", resp.Usage.CompletionTokens)
+	g.Log().Infof(context.Background(), "Information-LLMTotalToken: %d", resp.Usage.TotalTokens)
 	s = strings.TrimPrefix(s, "```json")
 	s = strings.TrimSuffix(s, "```")
 	s = strings.TrimPrefix(s, "[")

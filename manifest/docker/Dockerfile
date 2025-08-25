@@ -6,11 +6,11 @@ FROM loads/alpine:3.8
 
 ENV WORKDIR                 /app
 ADD resource                $WORKDIR/
-ADD ./temp/linux_amd64/main $WORKDIR/main
-RUN chmod +x $WORKDIR/main
+ADD ./temp/linux_amd64/Routine $WORKDIR/Routine
+RUN chmod +x $WORKDIR/Routine
 
 ###############################################################################
 #                                   START
 ###############################################################################
 WORKDIR $WORKDIR
-CMD ./main
+CMD ./Routine
