@@ -10,6 +10,15 @@ gfcli:
     tagPrefixes:
       - my.image.pub/my-app
 
+database:
+  default:
+    link:  "mysql:root:12345678@tcp(127.0.0.1:3306)/test"
+
+redis:
+    default:
+        address: 127.0.0.1:6379
+        db: 1
+
 logger:
   path: "log/"
   file: "{Y-m-d}.log"

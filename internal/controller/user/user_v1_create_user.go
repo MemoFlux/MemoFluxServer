@@ -3,6 +3,7 @@ package user
 import (
 	"MemoFluxServer/internal/dao"
 	"MemoFluxServer/internal/model/do"
+	"MemoFluxServer/internal/service"
 	"context"
 	"fmt"
 
@@ -26,5 +27,10 @@ func (c *ControllerV1) CreateUser(ctx context.Context, req *v1.CreateUserReq) (r
 	}
 	// 正确的格式化输出：打印 uid、plan 与 username
 	g.Log().Infof(ctx, "User created: uid=%d plan=%d username=%s", userId, 0, req.Username)
+
+	err = service.PlanSetUser(ctx, userId, 0)
+	if err != nil {
+		return nil, err
+	}
 	return
 }
