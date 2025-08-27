@@ -81,8 +81,18 @@ func StructToJSONSchema(s interface{}) (json.RawMessage, error) {
 			}
 		}
 
+		// 解析 "dc" 标签以获取描述（如果 schema 标签没有提供描述的话）
+		if _, hasDescription := propertySchema["description"]; !hasDescription {
+			dcTag := field.Tag.Get("dc")
+			if dcTag != "" {
+				propertySchema["description"] = strings.TrimSpace(dcTag)
+			}
+		}
+
 		// 将 Go 类型映射到 JSON Schema 类型
-		mapGoTypeToJSONSchema(field.Type, propertySchema)
+		if err := mapGoTypeToJSONSchema(field.Type, propertySchema); err != nil {
+			return nil, fmt.Errorf("error processing field %s: %w", field.Name, err)
+		}
 
 		properties[jsonName] = propertySchema
 	}
@@ -104,7 +114,7 @@ func StructToJSONSchema(s interface{}) (json.RawMessage, error) {
 
 // mapGoTypeToJSONSchema 是一个辅助函数，用于将 Go 类型映射到 JSON Schema 属性。
 // 它支持递归处理嵌套的 struct 和切片。
-func mapGoTypeToJSONSchema(t reflect.Type, schema map[string]interface{}) {
+func mapGoTypeToJSONSchema(t reflect.Type, schema map[string]interface{}) error {
 	// 如果是指针，则获取其基础类型
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -129,20 +139,31 @@ func mapGoTypeToJSONSchema(t reflect.Type, schema map[string]interface{}) {
 		schema["type"] = "array"
 		// 递归处理切片中的元素类型
 		itemSchema := make(map[string]interface{})
-		mapGoTypeToJSONSchema(t.Elem(), itemSchema)
+		if err := mapGoTypeToJSONSchema(t.Elem(), itemSchema); err != nil {
+			return fmt.Errorf("error processing slice element type %s: %w", t.Elem().Name(), err)
+		}
 		schema["items"] = itemSchema
 	case reflect.Struct:
-		// 对于嵌套的 struct，理想情况下应该递归生成其完整的 schema。
-		// 为了简化，这里我们只标记它为 "object"。
-		// 一个更完整的实现会递归调用 StructToJSONSchema。
-		schema["type"] = "object"
-		// 注意：一个完整的递归实现会在这里调用 StructToJSONSchema(reflect.New(t).Interface())
-		// 并将结果（除了顶层的"type"）嵌入到这里。
-		// 但为了保持此示例的清晰性，我们仅将其标记为 object。
+		// 对于嵌套的 struct，递归生成其完整的 schema。
+		nestedSchemaRaw, err := StructToJSONSchema(reflect.New(t).Interface())
+		if err != nil {
+			return fmt.Errorf("failed to generate schema for nested struct %s: %w", t.Name(), err)
+		}
+
+		var nestedSchema map[string]interface{}
+		if err := json.Unmarshal(nestedSchemaRaw, &nestedSchema); err != nil {
+			return fmt.Errorf("failed to unmarshal schema for nested struct %s: %w", t.Name(), err)
+		}
+
+		// 将嵌套 schema 的属性合并到当前 schema
+		for k, v := range nestedSchema {
+			schema[k] = v
+		}
 
 	default:
 		schema["type"] = "string" // 默认或未知类型作为 string 处理
 	}
+	return nil
 }
 
 // isInteger 是一个简单的辅助函数，用于判断一个 Kind 是否为整数类型。

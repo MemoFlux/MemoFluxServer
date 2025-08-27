@@ -33,6 +33,19 @@ var (
 					user.NewV1(),
 				)
 			})
+			s.Group("/v1", func(group *ghttp.RouterGroup) {
+				group.Middleware(ghttp.MiddlewareHandlerResponse)
+				group.Bind(
+					hello.NewV1(),
+					user.NewV1(),
+				)
+			})
+			s.Group("/v2", func(group *ghttp.RouterGroup) {
+				group.Middleware(ghttp.MiddlewareHandlerResponse)
+				group.Bind(
+					llm.NewV2(),
+				)
+			})
 			s.Run()
 			return nil
 		},

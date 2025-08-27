@@ -158,7 +158,7 @@ func (c *ControllerV1) SSEGenerate(ctx context.Context, req *v1.SSEGenerateReq) 
 	// --- 5. 为每个 LLM 调用启动一个 Goroutine ---
 	for id, llmReq := range requests {
 		wg.Add(1) // 每启动一个 goroutine，WaitGroup 的计数器加 1
-		go c.callAndStreamLLM(ctx, client, id, llmReq, dataChan, &wg)
+		go callAndStreamLLM(ctx, client, id, llmReq, dataChan, &wg)
 	}
 
 	// --- 6. 启动一个 Goroutine，用于在所有流结束后关闭 channel ---
@@ -226,7 +226,7 @@ func (c *ControllerV1) SSEGenerate(ctx context.Context, req *v1.SSEGenerateReq) 
 
 // callAndStreamLLM 是一个辅助函数，负责执行单次 LLM 流式调用。
 // 它会在独立的 goroutine 中运行，并将结果或错误通过 channel 发送回去。
-func (c *ControllerV1) callAndStreamLLM(
+func callAndStreamLLM(
 	ctx context.Context,
 	client *openai.Client,
 	id string,

@@ -13,3 +13,9 @@ type ControllerV1 struct{}
 func NewV1() llm.ILlmV1 {
 	return &ControllerV1{}
 }
+
+type ControllerV2 struct{}
+
+func NewV2() llm.ILlmV2 {
+	return &ControllerV2{}
+}
