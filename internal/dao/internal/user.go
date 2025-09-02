@@ -21,16 +21,16 @@ type UserDao struct {
 
 // UserColumns defines and stores column names for the table user.
 type UserColumns struct {
-	Uid      string //
 	Username string //
 	Plan     string //
+	Uid      string //
 }
 
 // userColumns holds the columns for the table user.
 var userColumns = UserColumns{
-	Uid:      "uid",
 	Username: "username",
 	Plan:     "plan",
+	Uid:      "uid",
 }
 
 // NewUserDao creates and returns a new DAO object for table data access.

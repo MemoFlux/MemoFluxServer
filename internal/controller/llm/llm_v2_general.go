@@ -54,6 +54,8 @@ func (c *ControllerV2) General(ctx context.Context, req *v2.GeneralReq) (res *v2
 		var wg sync.WaitGroup
 		dataChan := make(chan CallChan, 3)
 
+		nowtime := service.GetNowtime()
+
 		knowledgeSchema, _ := service.StructToJSONSchema(&v1.Information{})
 		scheduleSchema, _ := service.StructToJSONSchema(&v1.Schedule{})
 
@@ -101,6 +103,10 @@ func (c *ControllerV2) General(ctx context.Context, req *v2.GeneralReq) (res *v2
 								},
 							},
 						},
+					},
+					{
+						Role:    openai.ChatMessageRoleUser,
+						Content: fmt.Sprintf("请基于当前时间 %d ，合理安排日程。", nowtime),
 					},
 					{
 						Role:    openai.ChatMessageRoleSystem,

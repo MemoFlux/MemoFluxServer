@@ -5,11 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
-	"sync"
-
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/sashabaranov/go-openai"
+	"strings"
+	"sync"
 
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
@@ -84,6 +83,7 @@ func (c *ControllerV1) General(ctx context.Context, req *v1.GeneralReq) (res *v1
 
 func Schedule(client *openai.Client, modelName string, req *v1.GeneralReq, schema string, wg *sync.WaitGroup, resultchan chan string) {
 	defer wg.Done()
+	nowtime := service.GetNowtime()
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
@@ -103,6 +103,10 @@ func Schedule(client *openai.Client, modelName string, req *v1.GeneralReq, schem
 							},
 						},
 					},
+				},
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: fmt.Sprintf("请基于当前时间 %d (东八区时间的 Unix 时间戳) 来合理安排日程。", nowtime),
 				},
 				{
 					Role:    openai.ChatMessageRoleSystem,
